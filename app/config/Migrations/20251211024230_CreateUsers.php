@@ -44,7 +44,14 @@ class CreateUsers extends AbstractMigration
             'null' => false,
         ]);
         $table->addIndex(['email'], ['unique' => true]);
-        $table->addTimestamps();
+        $table->addColumn('created', 'datetime', [
+            'default' => null,
+            'null' => false,
+        ]);
+        $table->addColumn('modified', 'datetime', [
+            'default' => null,
+            'null' => false,
+        ]);
         $table->create();
     }
 }

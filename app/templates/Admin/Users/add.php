@@ -26,11 +26,7 @@
                     // TODO: In future with authentication, check if current user is admin
                     // For now, show dropdown with buyer as default
                     echo $this->Form->control('role', [
-                        'options' => [
-                            'admin' => 'Admin',
-                            'seller' => 'Seller',
-                            'buyer' => 'Buyer'
-                        ],
+                        'options' => $roles,
                         'default' => 'buyer'
                     ]);
                 ?>

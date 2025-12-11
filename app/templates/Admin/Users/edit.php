@@ -31,11 +31,7 @@
                     // TODO: In future with authentication, check if current user is admin
                     // For now, show dropdown for editing role
                     echo $this->Form->control('role', [
-                        'options' => [
-                            'admin' => 'Admin',
-                            'seller' => 'Seller',
-                            'buyer' => 'Buyer'
-                        ]
+                        'options' => $roles
                     ]);
                 ?>
             </fieldset>

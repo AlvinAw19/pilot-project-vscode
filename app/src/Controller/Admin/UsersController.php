@@ -58,7 +58,14 @@ class UsersController extends AppController
             }
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
-        $this->set(compact('user'));
+        
+        $roles = [
+            'admin' => 'Admin',
+            'seller' => 'Seller',
+            'buyer' => 'Buyer'
+        ];
+        
+        $this->set(compact('user', 'roles'));
     }
 
     /**
@@ -82,7 +89,14 @@ class UsersController extends AppController
             }
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
-        $this->set(compact('user'));
+        
+        $roles = [
+            'admin' => 'Admin',
+            'seller' => 'Seller',
+            'buyer' => 'Buyer'
+        ];
+        
+        $this->set(compact('user', 'roles'));
     }
 
     /**
