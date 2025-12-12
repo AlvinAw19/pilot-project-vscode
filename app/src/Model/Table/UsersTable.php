@@ -65,6 +65,13 @@ class UsersTable extends Table
             ->add('email', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
 
         $validator
+            ->scalar('password')
+            ->maxLength('password', 255)
+            ->minLength('password', 8)
+            ->requirePresence('password', 'create')
+            ->notEmptyString('password');
+
+        $validator
             ->scalar('address')
             ->allowEmptyString('address');
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
+use App\Model\Entity\User;
 
 /**
  * Users Controller
@@ -59,11 +60,7 @@ class UsersController extends AppController
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
         
-        $roles = [
-            'admin' => 'Admin',
-            'seller' => 'Seller',
-            'buyer' => 'Buyer'
-        ];
+        $roles = User::getRoles();
         
         $this->set(compact('user', 'roles'));
     }
@@ -90,11 +87,7 @@ class UsersController extends AppController
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
         
-        $roles = [
-            'admin' => 'Admin',
-            'seller' => 'Seller',
-            'buyer' => 'Buyer'
-        ];
+        $roles = User::getRoles();
         
         $this->set(compact('user', 'roles'));
     }
