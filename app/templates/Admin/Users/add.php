@@ -2,6 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\User $user
+ * @var \App\Model\Entity\User $roles
  */
 ?>
 <div class="row">
@@ -16,20 +17,12 @@
             <?= $this->Form->create($user) ?>
             <fieldset>
                 <legend><?= __('Add User') ?></legend>
-                <?php
-                    echo $this->Form->control('name');
-                    echo $this->Form->control('email');
-                    echo $this->Form->control('password');
-                    echo $this->Form->control('address');
-                    echo $this->Form->control('description');
-                    
-                    // TODO: In future with authentication, check if current user is admin
-                    // For now, show dropdown with buyer as default
-                    echo $this->Form->control('role', [
-                        'options' => $roles,
-                        'default' => 'buyer'
-                    ]);
-                ?>
+                <?= $this->Form->control('name') ?>
+                <?= $this->Form->control('email') ?>
+                <?= $this->Form->control('password') ?>
+                <?= $this->Form->control('address') ?>
+                <?= $this->Form->control('description') ?>
+                <?= $this->Form->control('role', ['options' => $roles]) ?>
             </fieldset>
             <?= $this->Form->button(__('Submit')) ?>
             <?= $this->Form->end() ?>

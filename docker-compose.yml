@@ -27,10 +27,10 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: "abc12345"
-      MYSQL_USER: "pilot-project-vscode"
-      MYSQL_PASSWORD: "abc12345"
-      MYSQL_DATABASE: "pilot-project-vscode"
+      MYSQL_ROOT_PASSWORD: "sup3r_s3cr3t"
+      MYSQL_USER: "tutorials"
+      MYSQL_PASSWORD: "sup3r_s3cr3t"
+      MYSQL_DATABASE: "tutorials"
     command: mysqld --character-set-server=utf8 --init-connect='SET NAMES UTF8;'
     ports:
       - "3307:3306"
@@ -43,10 +43,10 @@ services:
     depends_on:
       - mysql
     environment:
-      MYSQL_ROOT_PASSWORD: "abc123"
-      MYSQL_USER: "pilot-project-vscode"
-      MYSQL_PASSWORD: "abc123"
-      MYSQL_DATABASE: "pilot-project-vscode"
+      MYSQL_ROOT_PASSWORD: "sup3r_s3cr3t"
+      MYSQL_USER: "tutorials"
+      MYSQL_PASSWORD: "sup3r_s3cr3t"
+      MYSQL_DATABASE: "tutorials"
     tmpfs:
         - /var/lib/mysql
 

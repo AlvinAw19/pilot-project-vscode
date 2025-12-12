@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Model\Entity;
 
-use Cake\ORM\Entity;
 use Cake\Auth\DefaultPasswordHasher;
+use Cake\ORM\Entity;
 
 /**
  * User Entity
@@ -13,15 +13,19 @@ use Cake\Auth\DefaultPasswordHasher;
  * @property string $name
  * @property string $email
  * @property string $password
- * @property string|null $address
+ * @property string $address
  * @property string|null $description
  * @property string $role
+ * @property \Cake\I18n\FrozenTime|null $deleted
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime|null $modified
- * @property \Cake\I18n\FrozenTime|null $deleted
  */
 class User extends Entity
 {
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_SELLER = 'seller';
+    public const ROLE_BUYER = 'buyer';
+
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -38,9 +42,9 @@ class User extends Entity
         'address' => true,
         'description' => true,
         'role' => true,
+        'deleted' => true,
         'created' => true,
         'modified' => true,
-        'deleted' => true,
     ];
 
     /**
@@ -53,17 +57,22 @@ class User extends Entity
     ];
 
     /**
-     * User role constants
+     * Mutator for password to hash it.
+     *
+     * @param string $password Password to hash.
+     * @return string|null
      */
-    public const ROLE_ADMIN = 'admin';
-    public const ROLE_SELLER = 'seller';
-    public const ROLE_BUYER = 'buyer';
+    protected function _setPassword(string $password): ?string
+    {
+        if (strlen($password) > 0) {
+            return (string)(new DefaultPasswordHasher())->hash($password);
+        }
+
+        return null;
+    }
 
     /**
-     * Get all available user roles as an associative array.
-     *
-     * Returns an array where keys are the role values stored in the database
-     * and values are the human-readable labels for display in forms.
+     * Get all available user roles as an array.
      *
      * @return array<string, string> Array of role values => labels
      */
@@ -74,20 +83,5 @@ class User extends Entity
             self::ROLE_SELLER => 'Seller',
             self::ROLE_BUYER => 'Buyer',
         ];
-    }
-
-    /**
-     * Mutator for password to hash it.
-     *
-     * @param string $password Password to hash.
-     * @return string|null
-     */
-    protected function _setPassword(string $password): ?string
-    {
-        if (strlen($password) > 0) {
-            $hashed = (new DefaultPasswordHasher())->hash($password);
-            return $hashed ?: null;
-        }
-        return null;
     }
 }

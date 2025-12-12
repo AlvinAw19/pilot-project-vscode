@@ -79,6 +79,7 @@ return function (RouteBuilder $routes): void {
     });
 
     $routes->prefix('Admin', function (RouteBuilder $builder): void {
+        $builder->connect('/', ['controller' => 'Users', 'action' => 'index']);
         $builder->fallbacks();
     });
 

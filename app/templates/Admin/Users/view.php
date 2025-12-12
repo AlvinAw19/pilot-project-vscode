@@ -35,12 +35,12 @@
                     <td><?= $this->Number->format($user->id) ?></td>
                 </tr>
                 <tr>
-                    <th><?= __('Created At') ?></th>
-                    <td><?= h($user->created_at) ?></td>
+                    <th><?= __('Created') ?></th>
+                    <td><?= h($user->created) ?></td>
                 </tr>
                 <tr>
-                    <th><?= __('Updated At') ?></th>
-                    <td><?= h($user->updated_at) ?></td>
+                    <th><?= __('Modified') ?></th>
+                    <td><?= h($user->modified) ?></td>
                 </tr>
             </table>
             <div class="text">

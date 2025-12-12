@@ -20,8 +20,8 @@ Alternatively use the work around suggested [here.](https://github.com/docker/do
 
 Docker Compose for development environment exposes following ports:
 
-- 80 (HTTP) http://localhost/
-- 3306 (MySQL) username and password are set in [docker-compose.yml](docker-compose.yml)
+- 8080 (HTTP) http://localhost:8080/
+- 3307 (MySQL) username and password are set in [docker-compose.yml](docker-compose.yml)
 
 If another application is using these ports, Docker Compose can't start.
 Please stop that application before starting Docker Compose.

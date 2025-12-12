@@ -32,7 +32,7 @@ class CreateUsers extends AbstractMigration
         ]);
         $table->addColumn('address', 'text', [
             'default' => null,
-            'null' => true,
+            'null' => false,
         ]);
         $table->addColumn('description', 'text', [
             'default' => null,
@@ -43,7 +43,6 @@ class CreateUsers extends AbstractMigration
             'limit' => 255,
             'null' => false,
         ]);
-        $table->addIndex(['email'], ['unique' => true]);
         $table->addColumn('created', 'datetime', [
             'default' => null,
             'null' => false,
@@ -52,6 +51,10 @@ class CreateUsers extends AbstractMigration
             'default' => null,
             'null' => false,
         ]);
+        $table->addColumn('deleted', 'datetime', [
+            'null' => true
+        ]);
+        $table->addIndex(['email'], ['unique'=>true]);
         $table->create();
     }
 }

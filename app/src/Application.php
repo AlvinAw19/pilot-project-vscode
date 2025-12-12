@@ -63,9 +63,8 @@ class Application extends BaseApplication
             $this->addPlugin('DebugKit');
         }
 
-        $this->addPlugin('Muffin/Trash');
-
         // Load more plugins here
+        $this->addPlugin('Muffin/Trash');
     }
 
     /**
@@ -95,14 +94,13 @@ class Application extends BaseApplication
             // Parse various types of encoded request bodies so that they are
             // available as array through $request->getData()
             // https://book.cakephp.org/4/en/controllers/middleware.html#body-parser-middleware
-            ->add(new BodyParserMiddleware());
+            ->add(new BodyParserMiddleware())
 
             // Cross Site Request Forgery (CSRF) Protection Middleware
             // https://book.cakephp.org/4/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
-            // Temporarily disabled for development
-            // ->add(new CsrfProtectionMiddleware([
-            //     'httponly' => true,
-            // ]));
+            ->add(new CsrfProtectionMiddleware([
+                'httponly' => true,
+            ]));
 
         return $middlewareQueue;
     }
