@@ -22,7 +22,7 @@ class UserPolicy
      */
     public function canAdd(IdentityInterface $identity, ?User $user): bool
     {
-        return $identity->get('role') === 'admin';
+        return $this->isAdmin($identity);
     }
 
     /**
@@ -34,7 +34,7 @@ class UserPolicy
      */
     public function canEdit(IdentityInterface $identity, User $user): bool
     {
-        return $identity->get('role') === 'admin';
+        return $this->isAdmin($identity);
     }
 
     /**
@@ -46,7 +46,7 @@ class UserPolicy
      */
     public function canDelete(IdentityInterface $identity, User $user): bool
     {
-        return $identity->get('role') === 'admin';
+        return $this->isAdmin($identity);
     }
 
     /**
@@ -56,6 +56,17 @@ class UserPolicy
      * @return bool
      */
     public function canIndex(IdentityInterface $identity): bool
+    {
+        return $this->isAdmin($identity);
+    }
+
+    /**
+     * Check if the identity is an admin.
+     *
+     * @param \Authorization\IdentityInterface $identity The user identity.
+     * @return bool
+     */
+    private function isAdmin(IdentityInterface $identity): bool
     {
         return $identity->get('role') === 'admin';
     }
