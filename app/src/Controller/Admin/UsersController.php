@@ -3,17 +3,42 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
-use App\Controller\AppController;
 use App\Model\Entity\User;
 
 /**
  * Users Controller
  *
  * @property \App\Model\Table\UsersTable $Users
- * @method \App\Model\Entity\User[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
+ * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  */
-class UsersController extends AppController
+class UsersController extends \App\Controller\UsersController
 {
+    /**
+     * Initialization hook method.
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+    }
+
+    /**
+     * Before filter callback.
+     *
+     * @param \Cake\Event\EventInterface $event The beforeFilter event.
+     * @return void
+     */
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        $identity = $this->request->getAttribute('identity');
+        if (!$identity || $identity->get('role') !== 'admin') {
+            throw new \Authorization\Exception\ForbiddenException('Access denied');
+        }
+    }
     /**
      * Index method
      *
@@ -21,6 +46,14 @@ class UsersController extends AppController
      */
     public function index()
     {
+        $identity = $this->request->getAttribute('identity');
+        if (!$identity || $identity->get('role') !== 'admin') {
+            throw new \Authorization\Exception\ForbiddenException('Access denied');
+        }
+
+        // Authorization check passed for admin users
+        $this->Authorization->skipAuthorization();
+
         $users = $this->paginate($this->Users);
 
         $this->set(compact('users'));
@@ -36,6 +69,7 @@ class UsersController extends AppController
     public function view($id = null)
     {
         $user = $this->Users->get($id);
+        $this->Authorization->authorize($user);
 
         $this->set(compact('user'));
     }
@@ -48,6 +82,7 @@ class UsersController extends AppController
     public function add()
     {
         $user = $this->Users->newEmptyEntity();
+        $this->Authorization->authorize($user);
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             if ($this->Users->save($user)) {
@@ -71,6 +106,7 @@ class UsersController extends AppController
     public function edit($id = null)
     {
         $user = $this->Users->get($id);
+        $this->Authorization->authorize($user);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             if ($this->Users->save($user)) {
@@ -95,6 +131,7 @@ class UsersController extends AppController
     {
         $this->request->allowMethod(['post', 'delete']);
         $user = $this->Users->get($id);
+        $this->Authorization->authorize($user);
         if ($this->Users->delete($user)) {
             $this->Flash->success(__('The user has been deleted.'));
         } else {

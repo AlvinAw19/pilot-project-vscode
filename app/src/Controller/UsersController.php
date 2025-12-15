@@ -10,6 +10,7 @@ use Cake\Event\EventInterface;
  *
  * @property \App\Model\Table\UsersTable $Users
  * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  */
 class UsersController extends AppController
 {
@@ -39,6 +40,7 @@ class UsersController extends AppController
      */
     public function add()
     {
+        $this->Authorization->skipAuthorization();
         $user = $this->Users->newEmptyEntity();
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
@@ -63,15 +65,21 @@ class UsersController extends AppController
      */
     public function login()
     {
+        $this->Authorization->skipAuthorization();
         $this->request->allowMethod(['get', 'post']);
         $result = $this->Authentication->getResult();
         // regardless of POST or GET, redirect if user is logged in
         if ($result && $result->isValid()) {
-            // redirect to /display after login success
-            // FIXME: redirect to individual page after set up of all role during function 6
+            $identity = $this->Authentication->getIdentity();
+            $redirect = $this->Authentication->getLoginRedirect();
 
-            return $this->redirect(['controller' => 'Pages',
-                'action' => 'display',]);
+            if (!$redirect) {
+                if ($identity->get('role') === 'admin') {
+                    return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
+                }
+                return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
+            }
+            return $this->redirect($redirect);
         }
         // display error if user submitted and authentication failed
         if ($this->request->is('post') && ($result === null || !$result->isValid())) {
@@ -84,22 +92,15 @@ class UsersController extends AppController
     /**
      * Logs the user out of the application.
      *
-     * If the current authentication result is valid, the user's session
-     * is cleared using the Authentication plugin's logout mechanism.
-     * After logging out, the user is redirected to the login page.
+     * Clears the user's session using the Authentication plugin's logout mechanism
+     * and redirects to the login page. This action is accessible to all users.
      *
-     * @return \Cake\Http\Response|null Redirects to the login page on success,
-     *   or null if no authenticated user was found.
+     * @return \Cake\Http\Response Redirects to the login page.
      */
     public function logout()
     {
-        $result = $this->Authentication->getResult();
-        if ($result && $result->isValid()) {
-            $this->Authentication->logout();
-
-            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
-        }
-
-        return null;
+        $this->Authorization->skipAuthorization();
+        $this->Authentication->logout();
+        return $this->redirect(['controller' => 'Users', 'action' => 'login']);
     }
 }
