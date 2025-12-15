@@ -61,6 +61,18 @@ class UserPolicy
     }
 
     /**
+     * Check if the identity can view a user.
+     *
+     * @param \Authorization\IdentityInterface $identity The user identity.
+     * @param \App\Model\Entity\User $user The user entity.
+     * @return bool
+     */
+    public function canView(IdentityInterface $identity, User $user): bool
+    {
+        return $this->isAdmin($identity);
+    }
+
+    /**
      * Check if the identity is an admin.
      *
      * @param \Authorization\IdentityInterface $identity The user identity.
