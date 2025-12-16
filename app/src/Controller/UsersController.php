@@ -77,6 +77,9 @@ class UsersController extends AppController
                 if ($identity->get('role') === 'admin') {
                     return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
                 }
+                elseif ($identity->get('role') === 'seller') {
+                    return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
+                }
                 return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
             }
             return $this->redirect($redirect);
