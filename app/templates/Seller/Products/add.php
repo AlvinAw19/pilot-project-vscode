@@ -20,6 +20,7 @@
                 <?php
                     echo $this->Form->control('category_id', ['options' => $categories]);
                     echo $this->Form->control('name');
+                    echo $this->Form->control('slug');
                     echo $this->Form->control('description');
                     echo $this->Form->control('image_link');
                     echo $this->Form->control('stock');

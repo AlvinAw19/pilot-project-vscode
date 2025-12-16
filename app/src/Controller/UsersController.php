@@ -73,16 +73,14 @@ class UsersController extends AppController
             $identity = $this->Authentication->getIdentity();
             $redirect = $this->Authentication->getLoginRedirect();
 
-            if (!$redirect) {
-                if ($identity->get('role') === 'admin') {
-                    return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
-                }
-                elseif ($identity->get('role') === 'seller') {
-                    return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
-                }
-                return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
+            // Always redirect based on role, ignore stored redirect for better UX
+            if ($identity->get('role') === 'admin') {
+                return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
             }
-            return $this->redirect($redirect);
+            elseif ($identity->get('role') === 'seller') {
+                return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
+            }
+            return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
         }
         // display error if user submitted and authentication failed
         if ($this->request->is('post') && ($result === null || !$result->isValid())) {
