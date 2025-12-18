@@ -34,7 +34,8 @@ class CreateCategories extends AbstractMigration
             'null' => false,
         ]);
         $table->addColumn('deleted', 'datetime', [
-            'null' => true
+            'default' => null,
+            'null' => true,
         ]);
         $table->addIndex(['slug'], ['unique' => true]);
         $table->create();

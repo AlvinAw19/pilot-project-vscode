@@ -3,31 +3,23 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Controller\AppController;
 use App\Model\Entity\User;
+use Authorization\Exception\ForbiddenException;
 
 /**
  * Users Controller
  *
  * @property \App\Model\Table\UsersTable $Users
- * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
+ * @method \App\Model\Entity\User[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
-class UsersController extends \App\Controller\UsersController
+class UsersController extends AppController
 {
-    /**
-     * Initialization hook method.
-     *
-     * @return void
-     */
-    public function initialize(): void
-    {
-        parent::initialize();
-    }
-
     /**
      * Before filter callback.
      *
-     * @param \Cake\Event\EventInterface $event The beforeFilter event.
+     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event The beforeFilter event.
      * @return void
      */
     public function beforeFilter(\Cake\Event\EventInterface $event)
@@ -35,13 +27,12 @@ class UsersController extends \App\Controller\UsersController
         parent::beforeFilter($event);
 
         $identity = $this->request->getAttribute('identity');
-        if (!$identity || $identity->get('role') !== 'admin') {
-            throw new \Authorization\Exception\ForbiddenException('Access denied');
+        if (!$identity || $identity->get('role') !== User::ROLE_ADMIN) {
+            throw new ForbiddenException(null, __('Access denied'));
         }
-
-        // Skip authorization for all actions since admin check is done above
         $this->Authorization->skipAuthorization();
     }
+
     /**
      * Index method
      *

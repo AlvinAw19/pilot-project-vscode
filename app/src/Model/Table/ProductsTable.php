@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
-use Cake\ORM\Query;
+use Cake\Event\EventInterface;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Utility\Text;
@@ -14,7 +14,6 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\CategoriesTable&\Cake\ORM\Association\BelongsTo $Categories
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
- *
  * @method \App\Model\Entity\Product newEmptyEntity()
  * @method \App\Model\Entity\Product newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Product[] newEntities(array $data, array $options = [])
@@ -28,7 +27,6 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\Product[]|\Cake\Datasource\ResultSetInterface saveManyOrFail(iterable $entities, $options = [])
  * @method \App\Model\Entity\Product[]|\Cake\Datasource\ResultSetInterface|false deleteMany(iterable $entities, $options = [])
  * @method \App\Model\Entity\Product[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
- *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class ProductsTable extends Table
@@ -36,7 +34,7 @@ class ProductsTable extends Table
     /**
      * Initialize method
      *
-     * @param array $config The configuration for the Table.
+     * @param array<string, mixed> $config The configuration for the Table.
      * @return void
      */
     public function initialize(array $config): void
@@ -83,15 +81,9 @@ class ProductsTable extends Table
             ->notEmptyString('name');
 
         $validator
-            ->scalar('slug')
-            ->maxLength('slug', 255)
-            ->requirePresence('slug', 'create')
-            ->notEmptyString('slug')
-            ->add('slug', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
-
-        $validator
             ->scalar('description')
-            ->allowEmptyString('description');
+            ->requirePresence('description', 'create')
+            ->notEmptyString('description');
 
         $validator
             ->scalar('image_link')
@@ -100,12 +92,10 @@ class ProductsTable extends Table
 
         $validator
             ->integer('stock')
-            ->requirePresence('stock', 'create')
             ->notEmptyString('stock');
 
         $validator
             ->decimal('price')
-            ->requirePresence('price', 'create')
             ->notEmptyString('price');
 
         $validator
@@ -131,11 +121,19 @@ class ProductsTable extends Table
         return $rules;
     }
 
-    public function beforeSave($event, $entity, $options)
+    /**
+     * Executes operations before saving an entity, such as generating a slug for new entities without one.
+     *
+     * @param \Cake\Event\EventInterface<\Cake\ORM\Table> $event The event that was triggered.
+     * @param \App\Model\Entity\Category $entity The entity being saved.
+     * @param \ArrayObject<string, mixed> $options Additional options for the save operation.
+     * @return void
+     */
+    public function beforeSave(EventInterface $event, $entity, $options)
     {
-        if ($entity->isNew() && empty($entity->slug)) {
-            $sluggedName = Text::slug($entity->name);
-            $entity->slug = strtolower($sluggedName);
+        if ($entity->isNew() && !$entity->slug) {
+            $sluggedProductName = Text::slug($entity->name);
+            $entity->slug = substr(strtolower($sluggedProductName), 0, 191);
         }
     }
 }

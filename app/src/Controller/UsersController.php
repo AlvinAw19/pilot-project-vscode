@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Model\Entity\User;
 use Cake\Event\EventInterface;
 
 /**
@@ -28,17 +29,15 @@ class UsersController extends AppController
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
-        // Configure the login and add user action to not require authentication, preventing
-        // the infinite redirect loop issue
-        $this->Authentication->allowUnauthenticated(['login', 'add']);
+        $this->Authentication->addUnauthenticatedActions(['login', 'register']);
     }
 
     /**
-     * Add method
+     * Register method
      *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
+     * @return \Cake\Http\Response|null|void Redirects on successful register, renders view otherwise.
      */
-    public function add()
+    public function register()
     {
         $this->Authorization->skipAuthorization();
         $user = $this->Users->newEmptyEntity();
@@ -47,10 +46,9 @@ class UsersController extends AppController
             $user->role = 'buyer';
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('The user has been saved.'));
-                // FIXME: redirect to product catalog when logged in in function 6
+                // TODO: redirect to product catalog when logged in in function 6
 
-                return $this->redirect(['controller' => 'Pages',
-                'action' => 'display',]);
+                return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
             }
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
@@ -70,16 +68,13 @@ class UsersController extends AppController
         $result = $this->Authentication->getResult();
         // regardless of POST or GET, redirect if user is logged in
         if ($result && $result->isValid()) {
-            $identity = $this->Authentication->getIdentity();
-            $redirect = $this->Authentication->getLoginRedirect();
-
-            // Always redirect based on role, ignore stored redirect for better UX
-            if ($identity->get('role') === 'admin') {
+            // TODO: redirect to individual page after set up of all role during function 6
+            if ($this->request->getAttribute('identity')->get('role') === User::ROLE_ADMIN) {
                 return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
-            }
-            elseif ($identity->get('role') === 'seller') {
+            } elseif ($this->request->getAttribute('identity')->get('role') === User::ROLE_SELLER) {
                 return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
             }
+
             return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
         }
         // display error if user submitted and authentication failed
@@ -93,15 +88,17 @@ class UsersController extends AppController
     /**
      * Logs the user out of the application.
      *
-     * Clears the user's session using the Authentication plugin's logout mechanism
-     * and redirects to the login page. This action is accessible to all users.
+     * If the current authentication result is valid, the user's session
+     * is cleared using the Authentication plugin's logout mechanism.
+     * After logging out, the user is redirected to the login page.
      *
-     * @return \Cake\Http\Response Redirects to the login page.
+     * @return \Cake\Http\Response|null Redirects to the login page on success,
+     *   or null if no authenticated user was found.
      */
     public function logout()
     {
-        $this->Authorization->skipAuthorization();
         $this->Authentication->logout();
+
         return $this->redirect(['controller' => 'Users', 'action' => 'login']);
     }
 }

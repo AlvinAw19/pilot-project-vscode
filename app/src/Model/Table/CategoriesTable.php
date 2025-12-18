@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Event\EventInterface;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
+use Cake\Utility\Text;
 use Cake\Validation\Validator;
 
 /**
@@ -23,6 +25,7 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\Category[]|\Cake\Datasource\ResultSetInterface saveManyOrFail(iterable $entities, $options = [])
  * @method \App\Model\Entity\Category[]|\Cake\Datasource\ResultSetInterface|false deleteMany(iterable $entities, $options = [])
  * @method \App\Model\Entity\Category[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
+ * @mixin \Cake\ORM\Behavior\TimestampBehavior
  */
 class CategoriesTable extends Table
 {
@@ -39,6 +42,7 @@ class CategoriesTable extends Table
         $this->setTable('categories');
         $this->setDisplayField('name');
         $this->setPrimaryKey('id');
+
         $this->addBehavior('Timestamp');
         $this->addBehavior('Muffin/Trash.Trash');
 
@@ -58,24 +62,9 @@ class CategoriesTable extends Table
             ->maxLength('name', 255)
             ->requirePresence('name', 'create')
             ->notEmptyString('name');
-
-        $validator
-            ->scalar('slug')
-            ->maxLength('slug', 255)
-            ->requirePresence('slug', 'create')
-            ->notEmptyString('slug');
-
         $validator
             ->dateTime('deleted')
             ->allowEmptyDateTime('deleted');
-
-        $validator
-            ->dateTime('created')
-            ->notEmptyDateTime('created');
-
-        $validator
-            ->dateTime('modified')
-            ->allowEmptyDateTime('modified');
 
         return $validator;
     }
@@ -92,5 +81,21 @@ class CategoriesTable extends Table
         $rules->add($rules->isUnique(['slug']), ['errorField' => 'slug']);
 
         return $rules;
+    }
+
+    /**
+     * Executes operations before saving an entity, such as generating a slug for new entities without one.
+     *
+     * @param \Cake\Event\EventInterface<\Cake\ORM\Table> $event The event that was triggered.
+     * @param \App\Model\Entity\Category $entity The entity being saved.
+     * @param \ArrayObject<string, mixed> $options Additional options for the save operation.
+     * @return void
+     */
+    public function beforeSave(EventInterface $event, $entity, $options)
+    {
+        if ($entity->isNew() && !$entity->slug) {
+            $sluggedCategoryName = Text::slug($entity->name);
+            $entity->slug = substr(strtolower($sluggedCategoryName), 0, 191);
+        }
     }
 }

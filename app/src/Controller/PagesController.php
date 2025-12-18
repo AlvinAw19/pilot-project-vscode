@@ -28,21 +28,12 @@ use Cake\View\Exception\MissingTemplateException;
  * This controller will render views from templates/Pages/
  *
  * @link https://book.cakephp.org/4/en/controllers/pages-controller.html
+ * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  */
 class PagesController extends AppController
 {
-    /**
-     * Before filter callback.
-     *
-     * @param \Cake\Event\EventInterface $event The beforeFilter event.
-     * @return void
-     */
-    public function beforeFilter(\Cake\Event\EventInterface $event)
-    {
-        parent::beforeFilter($event);
-        $this->Authentication->allowUnauthenticated(['display']);
-    }
-    
+
     /**
      * Displays a view
      *
@@ -57,8 +48,6 @@ class PagesController extends AppController
      */
     public function display(string ...$path): ?Response
     {
-        $this->Authorization->skipAuthorization();
-
         if (!$path) {
             return $this->redirect('/');
         }

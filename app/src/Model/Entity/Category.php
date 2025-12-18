@@ -11,9 +11,9 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $name
  * @property string $slug
- * @property \Cake\I18n\FrozenTime|null $deleted
  * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime|null $modified
+ * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\FrozenTime $deleted
  */
 class Category extends Entity
 {
@@ -29,8 +29,8 @@ class Category extends Entity
     protected $_accessible = [
         'name' => true,
         'slug' => true,
-        'deleted' => true,
         'created' => true,
         'modified' => true,
+        'deleted' => true,
     ];
 }

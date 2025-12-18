@@ -19,8 +19,12 @@ namespace App;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
-use Authorization\AuthorizationServiceProviderInterface;
 use Authentication\Middleware\AuthenticationMiddleware;
+use Authorization\AuthorizationService;
+use Authorization\AuthorizationServiceInterface;
+use Authorization\AuthorizationServiceProviderInterface;
+use Authorization\Middleware\AuthorizationMiddleware;
+use Authorization\Policy\OrmResolver;
 use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Datasource\FactoryLocator;
@@ -34,10 +38,6 @@ use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
 use Cake\Routing\Router;
 use Psr\Http\Message\ServerRequestInterface;
-use Authorization\Middleware\AuthorizationMiddleware;
-use Authorization\AuthorizationService;
-use Authorization\Policy\OrmResolver;
-use Authorization\AuthorizationServiceInterface;
 
 /**
  * Application setup class.
@@ -78,7 +78,6 @@ class Application extends BaseApplication implements
 
         // Load more plugins here
         $this->addPlugin('Muffin/Trash');
-        $this->addPlugin('Authentication');
         $this->addPlugin('Authorization');
     }
 
@@ -181,10 +180,16 @@ class Application extends BaseApplication implements
         return $authenticationService;
     }
 
+    /**
+     * Returns the configured AuthorizationService instance.
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request The incoming request.
+     * @return \Authorization\AuthorizationServiceInterface The configured authorization service.
+     */
     public function getAuthorizationService(ServerRequestInterface $request): AuthorizationServiceInterface
     {
         $resolver = new OrmResolver();
 
-        return new AuthorizationService($resolver, $request->getAttribute('identity'));
+        return new AuthorizationService($resolver);
     }
 }

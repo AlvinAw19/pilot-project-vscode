@@ -38,6 +38,10 @@
                     <th><?= __('Modified') ?></th>
                     <td><?= h($category->modified) ?></td>
                 </tr>
+                <tr>
+                    <th><?= __('Deleted') ?></th>
+                    <td><?= h($category->deleted) ?></td>
+                </tr>
             </table>
         </div>
     </div>

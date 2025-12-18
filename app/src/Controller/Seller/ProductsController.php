@@ -3,23 +3,35 @@ declare(strict_types=1);
 
 namespace App\Controller\Seller;
 
+use App\Controller\AppController;
+use App\Model\Entity\User;
+use Authorization\Exception\ForbiddenException;
+
 /**
  * Products Controller
  *
+ * @property \App\Model\Table\ProductsTable $Products
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  * @method \App\Model\Entity\Product[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
-class ProductsController extends \App\Controller\AppController
+class ProductsController extends AppController
 {
+    /**
+     * Before filter callback.
+     *
+     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event The beforeFilter event.
+     * @return void
+     */
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
-        
-        $user = $this->Authentication->getIdentity();
-        if (!$user || $user->get('role') !== 'seller') {
-            $this->Flash->error(__('Access denied. Seller role required.'));
-            return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
+
+        $identity = $this->request->getAttribute('identity');
+        if (!$identity || $identity->get('role') !== User::ROLE_SELLER) {
+            throw new ForbiddenException(null, __('Access denied'));
         }
     }
+
     /**
      * Index method
      *
@@ -28,9 +40,10 @@ class ProductsController extends \App\Controller\AppController
     public function index()
     {
         $this->Authorization->skipAuthorization();
-        
-        $user = $this->Authentication->getIdentity();
-        $products = $this->paginate($this->Products->find()->where(['seller_id' => $user->id]));
+        $query = $this->Products->find()
+            ->where(['seller_id' => $this->request->getAttribute('identity')->id])
+            ->contain(['Categories']);
+        $products = $this->paginate($query);
 
         $this->set(compact('products'));
     }
@@ -38,14 +51,17 @@ class ProductsController extends \App\Controller\AppController
     /**
      * View method
      *
-     * @param string|null $slug Product slug.
+     * @param string $slug Product slug.
      * @return \Cake\Http\Response|null|void Renders view
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($slug = null)
+    public function view($slug)
     {
-        $product = $this->Products->findBySlug($slug)->firstOrFail();
-
+        $product = $this->Products
+            ->find()
+            ->where(['Products.slug' => $slug])
+            ->contain(['Categories', 'Users'])
+            ->firstOrFail();
         $this->Authorization->authorize($product);
 
         $this->set(compact('product'));
@@ -59,14 +75,11 @@ class ProductsController extends \App\Controller\AppController
     public function add()
     {
         $product = $this->Products->newEmptyEntity();
-
         $this->Authorization->authorize($product);
 
         if ($this->request->is('post')) {
-            $user = $this->Authentication->getIdentity();
-            $data = $this->request->getData();
-            $data['seller_id'] = $user->id;
-            $product = $this->Products->patchEntity($product, $data);
+            $product = $this->Products->patchEntity($product, $this->request->getData());
+            $product->seller_id = $this->request->getAttribute('identity')->id;
             if ($this->Products->save($product)) {
                 $this->Flash->success(__('The product has been saved.'));
 
@@ -74,21 +87,24 @@ class ProductsController extends \App\Controller\AppController
             }
             $this->Flash->error(__('The product could not be saved. Please, try again.'));
         }
-        $categories = $this->Products->Categories->find('list');
+        $categories = $this->Products->Categories->find('list')->all();
         $this->set(compact('product', 'categories'));
     }
 
     /**
      * Edit method
      *
-     * @param string|null $slug Product slug.
+     * @param string $slug Product slug.
      * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function edit($slug = null)
+    public function edit($slug)
     {
-        $product = $this->Products->findBySlug($slug)->firstOrFail();
-
+        /** @var \App\Model\Entity\Product $product */
+        $product = $this->Products
+            ->find()
+            ->where(['Products.slug' => $slug])
+            ->firstOrFail();
         $this->Authorization->authorize($product);
 
         if ($this->request->is(['patch', 'post', 'put'])) {
@@ -100,22 +116,26 @@ class ProductsController extends \App\Controller\AppController
             }
             $this->Flash->error(__('The product could not be saved. Please, try again.'));
         }
-        $categories = $this->Products->Categories->find('list');
+        $categories = $this->Products->Categories->find('list')->all();
         $this->set(compact('product', 'categories'));
     }
 
     /**
      * Delete method
      *
-     * @param string|null $slug Product slug.
+     * @param string $slug Product slug.
      * @return \Cake\Http\Response|null|void Redirects to index.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function delete($slug = null)
+    public function delete($slug)
     {
         $this->request->allowMethod(['post', 'delete']);
-        $product = $this->Products->findBySlug($slug)->firstOrFail();
 
+        /** @var \App\Model\Entity\Product $product */
+        $product = $this->Products
+            ->find()
+            ->where(['Products.slug' => $slug])
+            ->firstOrFail();
         $this->Authorization->authorize($product);
 
         if ($this->Products->delete($product)) {

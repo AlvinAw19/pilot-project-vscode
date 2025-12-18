@@ -80,17 +80,11 @@ return function (RouteBuilder $routes): void {
 
     $routes->prefix('Admin', function (RouteBuilder $builder): void {
         $builder->connect('/', ['controller' => 'Users', 'action' => 'index']);
-        $builder->connect('/products', ['controller' => 'Products', 'action' => 'index']);
-        $builder->connect('/products/view/{slug}', ['controller' => 'Products', 'action' => 'view'], ['pass' => ['slug']]);
         $builder->fallbacks();
     });
 
     $routes->prefix('Seller', function (RouteBuilder $builder): void {
-        $builder->connect('/products', ['controller' => 'Products', 'action' => 'index']);
-        $builder->connect('/products/view/{slug}', ['controller' => 'Products', 'action' => 'view'], ['pass' => ['slug']]);
-        $builder->connect('/products/add', ['controller' => 'Products', 'action' => 'add']);
-        $builder->connect('/products/edit/{slug}', ['controller' => 'Products', 'action' => 'edit'], ['pass' => ['slug']]);
-        $builder->connect('/products/delete/{slug}', ['controller' => 'Products', 'action' => 'delete'], ['pass' => ['slug']]);
+        $builder->connect('/', ['controller' => 'Products', 'action' => 'index']);
         $builder->fallbacks();
     });
 

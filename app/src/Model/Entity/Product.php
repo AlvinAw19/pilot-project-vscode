@@ -13,7 +13,7 @@ use Cake\ORM\Entity;
  * @property int $seller_id
  * @property string $name
  * @property string $slug
- * @property string|null $description
+ * @property string $description
  * @property string|null $image_link
  * @property int $stock
  * @property string $price

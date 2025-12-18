@@ -3,32 +3,23 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
-use App\Model\Entity\Category;
-use Cake\Utility\Text;
+use App\Controller\AppController;
+use App\Model\Entity\User;
+use Authorization\Exception\ForbiddenException;
 
 /**
  * Categories Controller
  *
  * @property \App\Model\Table\CategoriesTable $Categories
- * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
+ * @method \App\Model\Entity\Category[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
-class CategoriesController extends \App\Controller\AppController
+class CategoriesController extends AppController
 {
-    /**
-     * Initialization hook method.
-     *
-     * @return void
-     */
-    public function initialize(): void
-    {
-        parent::initialize();
-    }
-
     /**
      * Before filter callback.
      *
-     * @param \Cake\Event\EventInterface $event The beforeFilter event.
+     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event The beforeFilter event.
      * @return void
      */
     public function beforeFilter(\Cake\Event\EventInterface $event)
@@ -36,11 +27,9 @@ class CategoriesController extends \App\Controller\AppController
         parent::beforeFilter($event);
 
         $identity = $this->request->getAttribute('identity');
-        if (!$identity || $identity->get('role') !== 'admin') {
-            throw new \Authorization\Exception\ForbiddenException('Access denied');
+        if (!$identity || $identity->get('role') !== User::ROLE_ADMIN) {
+            throw new ForbiddenException(null, __('Access denied'));
         }
-
-        // Skip authorization for all actions since admin check is done above
         $this->Authorization->skipAuthorization();
     }
 
@@ -59,13 +48,16 @@ class CategoriesController extends \App\Controller\AppController
     /**
      * View method
      *
-     * @param string|null $slug Category slug.
+     * @param string $slug Category slug.
      * @return \Cake\Http\Response|null|void Renders view
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($slug = null)
+    public function view($slug)
     {
-        $category = $this->Categories->find()->where(['slug' => $slug])->firstOrFail();
+        $category = $this->Categories
+            ->find()
+            ->where(['Categories.slug' => $slug])
+            ->firstOrFail();
 
         $this->set(compact('category'));
     }
@@ -80,7 +72,6 @@ class CategoriesController extends \App\Controller\AppController
         $category = $this->Categories->newEmptyEntity();
         if ($this->request->is('post')) {
             $category = $this->Categories->patchEntity($category, $this->request->getData());
-            $category->slug = Text::slug($category->name);
             if ($this->Categories->save($category)) {
                 $this->Flash->success(__('The category has been saved.'));
 
@@ -94,16 +85,20 @@ class CategoriesController extends \App\Controller\AppController
     /**
      * Edit method
      *
-     * @param string|null $slug Category slug.
+     * @param string $slug Category slug.
      * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function edit($slug = null)
+    public function edit($slug)
     {
-        $category = $this->Categories->find()->where(['slug' => $slug])->firstOrFail();
+        /** @var \App\Model\Entity\Category $category */
+        $category = $this->Categories
+            ->find()
+            ->where(['Categories.slug' => $slug])
+            ->firstOrFail();
+
         if ($this->request->is(['patch', 'post', 'put'])) {
             $category = $this->Categories->patchEntity($category, $this->request->getData());
-            $category->slug = Text::slug($category->name);
             if ($this->Categories->save($category)) {
                 $this->Flash->success(__('The category has been saved.'));
 
@@ -117,14 +112,20 @@ class CategoriesController extends \App\Controller\AppController
     /**
      * Delete method
      *
-     * @param string|null $id Category id.
+     * @param string $slug Category slug.
      * @return \Cake\Http\Response|null|void Redirects to index.
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function delete($id = null)
+    public function delete($slug)
     {
         $this->request->allowMethod(['post', 'delete']);
-        $category = $this->Categories->get($id);
+
+        /** @var \App\Model\Entity\Category $category */
+        $category = $this->Categories
+            ->find()
+            ->where(['Categories.slug' => $slug])
+            ->firstOrFail();
+
         if ($this->Categories->delete($category)) {
             $this->Flash->success(__('The category has been deleted.'));
         } else {
