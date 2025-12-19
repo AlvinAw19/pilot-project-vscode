@@ -94,7 +94,7 @@ class CategoriesTable extends Table
     public function beforeSave(EventInterface $event, $entity, $options)
     {
         if ($entity->isNew() && !$entity->slug) {
-            $sluggedCategoryName = Text::slug($entity->name);
+            $entity->slug = Text::slug($entity->name);
             $entity->slug = substr(strtolower($sluggedCategoryName), 0, 191);
         }
     }

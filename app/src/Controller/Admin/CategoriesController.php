@@ -30,7 +30,6 @@ class CategoriesController extends AppController
         if (!$identity || $identity->get('role') !== User::ROLE_ADMIN) {
             throw new ForbiddenException(null, __('Access denied'));
         }
-        $this->Authorization->skipAuthorization();
     }
 
     /**
@@ -40,6 +39,8 @@ class CategoriesController extends AppController
      */
     public function index()
     {
+        $this->Authorization->authorize($this->Categories, 'index');
+
         $categories = $this->paginate($this->Categories);
 
         $this->set(compact('categories'));
@@ -59,6 +60,8 @@ class CategoriesController extends AppController
             ->where(['Categories.slug' => $slug])
             ->firstOrFail();
 
+        $this->Authorization->authorize($category);
+
         $this->set(compact('category'));
     }
 
@@ -72,6 +75,7 @@ class CategoriesController extends AppController
         $category = $this->Categories->newEmptyEntity();
         if ($this->request->is('post')) {
             $category = $this->Categories->patchEntity($category, $this->request->getData());
+            $this->Authorization->authorize($category);
             if ($this->Categories->save($category)) {
                 $this->Flash->success(__('The category has been saved.'));
 
@@ -96,6 +100,8 @@ class CategoriesController extends AppController
             ->find()
             ->where(['Categories.slug' => $slug])
             ->firstOrFail();
+
+        $this->Authorization->authorize($category);
 
         if ($this->request->is(['patch', 'post', 'put'])) {
             $category = $this->Categories->patchEntity($category, $this->request->getData());
@@ -125,6 +131,8 @@ class CategoriesController extends AppController
             ->find()
             ->where(['Categories.slug' => $slug])
             ->firstOrFail();
+
+        $this->Authorization->authorize($category);
 
         if ($this->Categories->delete($category)) {
             $this->Flash->success(__('The category has been deleted.'));
