@@ -6,11 +6,14 @@ namespace App\Controller;
 use Cake\Event\EventInterface;
 
 /**
- * Catalogs Controller
+ * Catalog Controller
  *
- * Public-facing product catalog for buyers
+ * Public facing catalog pages.
  *
+ * @property \App\Model\Table\CategoriesTable $Categories
  * @property \App\Model\Table\ProductsTable $Products
+ * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  */
 class CatalogsController extends AppController
 {
@@ -39,7 +42,7 @@ class CatalogsController extends AppController
         parent::initialize();
         $this->loadModel('Products');
         $this->loadModel('Categories');
-        
+
         // Skip authorization for all actions in this controller
         $this->Authorization->skipAuthorization();
     }
@@ -54,6 +57,7 @@ class CatalogsController extends AppController
      */
     public function index()
     {
+        // Get all products
         $query = $this->Products->find('search', [
             'search' => $this->request->getQueryParams(),
         ])
@@ -64,20 +68,20 @@ class CatalogsController extends AppController
             ->contain(['Categories'])
             ->order(['Products.created' => 'DESC']);
 
-        $products = $this->paginate($query, [
-            'limit' => 12,
-        ]);
+        $products = $this->paginate($query);
 
-        // Get all categories for filter
-        $categories = $this->Categories->find('all')
+        // Get all categories
+        $categories = $this->Categories->find()
             ->where(['Categories.deleted IS' => null])
             ->order(['Categories.name' => 'ASC'])
             ->all();
 
+        // Search term if any (use for filtering)
         $searchTerm = $this->request->getQuery('q');
+        // Category ID if any (use for filtering)
         $categoryId = $this->request->getQuery('category_id');
-        
-        // Get selected category if filtering
+
+        // Get selected category if filtering to display its name
         $selectedCategory = null;
         if ($categoryId) {
             $selectedCategory = $this->Categories->get($categoryId);
@@ -87,21 +91,17 @@ class CatalogsController extends AppController
     }
 
     /**
-     * Display product details by slug
+     * View method
      *
-     * Shows detailed product information including name, description,
-     * price, category, image, and stock. Only non-deleted products.
-     *
-     * @param string|null $slug Product slug
-     * @return void
+     * @param string $slug Product slug.
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($slug = null)
+    public function view($slug)
     {
-        $product = $this->Products->find()
-            ->where([
-                'Products.slug' => $slug,
-                'Products.deleted IS' => null,
-            ])
+        $product = $this->Products
+            ->find()
+            ->where(['Products.slug' => $slug, 'Products.deleted IS' => null])
             ->contain(['Categories', 'Users'])
             ->firstOrFail();
 

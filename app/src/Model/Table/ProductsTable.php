@@ -28,6 +28,7 @@ use Cake\Validation\Validator;
  * @method \App\Model\Entity\Product[]|\Cake\Datasource\ResultSetInterface|false deleteMany(iterable $entities, $options = [])
  * @method \App\Model\Entity\Product[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin \Search\Model\Behavior\SearchBehavior
  */
 class ProductsTable extends Table
 {
@@ -143,9 +144,6 @@ class ProductsTable extends Table
                 'before' => true,
                 'after' => true,
                 'mode' => 'or',
-                'comparison' => 'LIKE',
-                'wildcardAny' => '*',
-                'wildcardOne' => '?',
                 'fields' => ['Products.name', 'Products.description'],
             ])
             ->add('category_id', 'Search.Value', [

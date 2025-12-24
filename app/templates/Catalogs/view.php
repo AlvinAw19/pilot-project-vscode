@@ -49,18 +49,18 @@
                     <td><?= $this->Number->format($product->stock) ?> units</td>
                 </tr>
                 <?php if ($product->has('user')): ?>
-                <tr>
-                    <th><?= __('Seller') ?></th>
-                    <td><?= h($product->user->name) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Seller Address') ?></th>
-                    <td><?= h($product->user->address) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Seller Description') ?></th>
-                    <td><?= h($product->user->description) ?></td>
-                </tr>
+                    <tr>
+                        <th><?= __('Seller') ?></th>
+                        <td><?= h($product->user->name) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= __('Seller Address') ?></th>
+                        <td><?= h($product->user->address) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= __('Seller Description') ?></th>
+                        <td><?= h($product->user->description) ?></td>
+                    </tr>
                 <?php endif; ?>
                 <tr>
                     <th><?= __('Listed Date') ?></th>
