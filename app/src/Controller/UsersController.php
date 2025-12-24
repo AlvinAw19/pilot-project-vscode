@@ -69,9 +69,10 @@ class UsersController extends AppController
         // regardless of POST or GET, redirect if user is logged in
         if ($result && $result->isValid()) {
             // TODO: redirect to individual page after set up of all role during function 6
-            if ($this->request->getAttribute('identity')->get('role') === User::ROLE_ADMIN) {
+            $identity = $this->request->getAttribute('identity');
+            if ($identity && ($identity->get('role') === User::ROLE_ADMIN)) {
                 return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
-            } elseif ($this->request->getAttribute('identity')->get('role') === User::ROLE_SELLER) {
+            } elseif ($identity && ($identity->get('role') === User::ROLE_SELLER)) {
                 return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
             }
 

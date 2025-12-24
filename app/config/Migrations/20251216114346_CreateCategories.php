@@ -37,7 +37,6 @@ class CreateCategories extends AbstractMigration
             'default' => null,
             'null' => true,
         ]);
-        $table->addIndex(['slug'], ['unique' => true]);
         $table->create();
     }
 }

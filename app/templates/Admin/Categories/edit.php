@@ -23,7 +23,6 @@
                 <legend><?= __('Edit Category') ?></legend>
                 <?= $this->Form->control('name') ?>
                 <?= $this->Form->control('slug') ?>
-                <?= $this->Form->control('deleted') ?>
             </fieldset>
             <?= $this->Form->button(__('Submit')) ?>
             <?= $this->Form->end() ?>

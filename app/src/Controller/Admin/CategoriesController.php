@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
-use App\Model\Entity\User;
-use Authorization\Exception\ForbiddenException;
 
 /**
  * Categories Controller
@@ -17,29 +15,15 @@ use Authorization\Exception\ForbiddenException;
 class CategoriesController extends AppController
 {
     /**
-     * Before filter callback.
-     *
-     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event The beforeFilter event.
-     * @return void
-     */
-    public function beforeFilter(\Cake\Event\EventInterface $event)
-    {
-        parent::beforeFilter($event);
-
-        $identity = $this->request->getAttribute('identity');
-        if (!$identity || $identity->get('role') !== User::ROLE_ADMIN) {
-            throw new ForbiddenException(null, __('Access denied'));
-        }
-        $this->Authorization->skipAuthorization();
-    }
-
-    /**
      * Index method
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
     public function index()
     {
+        /** @var \App\Model\Entity\Category $category */
+        $category = $this->Categories->newEmptyEntity();
+        $this->Authorization->authorize($category);
         $categories = $this->paginate($this->Categories);
 
         $this->set(compact('categories'));
@@ -54,11 +38,13 @@ class CategoriesController extends AppController
      */
     public function view($slug)
     {
+        /** @var \App\Model\Entity\Category $category */
         $category = $this->Categories
             ->find()
             ->where(['Categories.slug' => $slug])
             ->firstOrFail();
 
+        $this->Authorization->authorize($category);
         $this->set(compact('category'));
     }
 
@@ -69,7 +55,9 @@ class CategoriesController extends AppController
      */
     public function add()
     {
+        /** @var \App\Model\Entity\Category $category */
         $category = $this->Categories->newEmptyEntity();
+        $this->Authorization->authorize($category);
         if ($this->request->is('post')) {
             $category = $this->Categories->patchEntity($category, $this->request->getData());
             if ($this->Categories->save($category)) {
@@ -97,6 +85,7 @@ class CategoriesController extends AppController
             ->where(['Categories.slug' => $slug])
             ->firstOrFail();
 
+        $this->Authorization->authorize($category);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $category = $this->Categories->patchEntity($category, $this->request->getData());
             if ($this->Categories->save($category)) {
@@ -126,6 +115,7 @@ class CategoriesController extends AppController
             ->where(['Categories.slug' => $slug])
             ->firstOrFail();
 
+        $this->Authorization->authorize($category);
         if ($this->Categories->delete($category)) {
             $this->Flash->success(__('The category has been deleted.'));
         } else {

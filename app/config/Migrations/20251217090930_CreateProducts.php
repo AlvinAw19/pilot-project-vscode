@@ -64,9 +64,6 @@ class CreateProducts extends AbstractMigration
             'default' => null,
             'null' => true,
         ]);
-        $table->addIndex(['slug'], ['unique' => true]);
-        $table->addForeignKey('category_id', 'categories', 'id', ['delete' => 'CASCADE', 'update' => 'CASCADE']);
-        $table->addForeignKey('seller_id', 'users', 'id', ['delete' => 'CASCADE', 'update' => 'CASCADE']);
         $table->create();
     }
 }

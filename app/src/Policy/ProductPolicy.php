@@ -21,7 +21,7 @@ class ProductPolicy
      */
     public function canAdd(IdentityInterface $user, Product $product)
     {
-        return $user->role === User::ROLE_SELLER;
+        return $this->isSeller($user);
     }
 
     /**
@@ -33,7 +33,7 @@ class ProductPolicy
      */
     public function canEdit(IdentityInterface $user, Product $product)
     {
-        return $product->seller_id === $user->id || $user->role === User::ROLE_ADMIN;
+        return $this->isSellerProduct($user, $product) || $this->isAdmin($user);
     }
 
     /**
@@ -45,7 +45,7 @@ class ProductPolicy
      */
     public function canDelete(IdentityInterface $user, Product $product)
     {
-        return $product->seller_id === $user->id || $user->role === User::ROLE_ADMIN;
+        return $this->isSellerProduct($user, $product) || $this->isAdmin($user);
     }
 
     /**
@@ -57,7 +57,7 @@ class ProductPolicy
      */
     public function canView(IdentityInterface $user, Product $product)
     {
-        return $product->seller_id === $user->id || $user->role === User::ROLE_ADMIN;
+        return $this->isSellerProduct($user, $product) || $this->isAdmin($user);
     }
 
     /**
@@ -70,6 +70,40 @@ class ProductPolicy
      */
     public function canIndex(IdentityInterface $user, ?Product $product = null)
     {
-        return in_array($user->role, [User::ROLE_ADMIN, User::ROLE_SELLER]);
+        return $this->isAdmin($user) || $this->isSeller($user);
+    }
+
+    /**
+     * Check if the user is an admin
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    private function isAdmin(IdentityInterface $user)
+    {
+        return $user->role === User::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if the user is an seller
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    private function isSeller(IdentityInterface $user)
+    {
+        return $user->role === User::ROLE_SELLER;
+    }
+
+    /**
+     * Check if the product belongs to the seller
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @param \App\Model\Entity\Product $product The product.
+     * @return bool
+     */
+    private function isSellerProduct(IdentityInterface $user, Product $product)
+    {
+        return $product->seller_id === $user->id;
     }
 }

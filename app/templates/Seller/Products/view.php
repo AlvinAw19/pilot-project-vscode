@@ -31,7 +31,7 @@
                     <td><?= h($product->slug) ?></td>
                 </tr>
                 <tr>
-                    <th><?= __('Image Link') ?></th>
+                    <th><?= __('Image') ?></th>
                     <td><?= $this->Html->image($product->image_link, ['width' => 200]) ?></td>
                 </tr>
                 <tr>

@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace App\Controller\Seller;
 
 use App\Controller\AppController;
-use App\Model\Entity\User;
-use Authorization\Exception\ForbiddenException;
 
 /**
  * Products Controller
@@ -17,29 +15,16 @@ use Authorization\Exception\ForbiddenException;
 class ProductsController extends AppController
 {
     /**
-     * Before filter callback.
-     *
-     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event The beforeFilter event.
-     * @return void
-     */
-    public function beforeFilter(\Cake\Event\EventInterface $event)
-    {
-        parent::beforeFilter($event);
-
-        $identity = $this->request->getAttribute('identity');
-        if (!$identity || $identity->get('role') !== User::ROLE_SELLER) {
-            throw new ForbiddenException(null, __('Access denied'));
-        }
-    }
-
-    /**
      * Index method
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
     public function index()
     {
-        $this->Authorization->skipAuthorization();
+        /** @var \App\Model\Entity\Product $product */
+        $product = $this->Products->newEmptyEntity();
+        $this->Authorization->authorize($product);
+
         $query = $this->Products->find()
             ->where(['seller_id' => $this->request->getAttribute('identity')->id])
             ->contain(['Categories']);
@@ -57,6 +42,7 @@ class ProductsController extends AppController
      */
     public function view($slug)
     {
+        /** @var \App\Model\Entity\Product $product */
         $product = $this->Products
             ->find()
             ->where(['Products.slug' => $slug])
@@ -74,6 +60,7 @@ class ProductsController extends AppController
      */
     public function add()
     {
+        /** @var \App\Model\Entity\Product $product */
         $product = $this->Products->newEmptyEntity();
         $this->Authorization->authorize($product);
 

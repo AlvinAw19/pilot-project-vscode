@@ -67,14 +67,6 @@ class ProductsTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->integer('category_id')
-            ->notEmptyString('category_id');
-
-        $validator
-            ->integer('seller_id')
-            ->notEmptyString('seller_id');
-
-        $validator
             ->scalar('name')
             ->maxLength('name', 255)
             ->requirePresence('name', 'create')
@@ -132,8 +124,7 @@ class ProductsTable extends Table
     public function beforeSave(EventInterface $event, $entity, $options)
     {
         if ($entity->isNew() && !$entity->slug) {
-            $sluggedProductName = Text::slug($entity->name);
-            $entity->slug = substr(strtolower($sluggedProductName), 0, 191);
+            $entity->slug = strtolower(Text::slug($entity->name));
         }
     }
 }

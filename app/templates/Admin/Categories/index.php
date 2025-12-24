@@ -16,7 +16,6 @@
                     <th><?= $this->Paginator->sort('slug') ?></th>
                     <th><?= $this->Paginator->sort('created') ?></th>
                     <th><?= $this->Paginator->sort('modified') ?></th>
-                    <th><?= $this->Paginator->sort('deleted') ?></th>
                     <th class="actions"><?= __('Actions') ?></th>
                 </tr>
             </thead>
@@ -28,7 +27,6 @@
                         <td><?= h($category->slug) ?></td>
                         <td><?= h($category->created) ?></td>
                         <td><?= h($category->modified) ?></td>
-                        <td><?= h($category->deleted) ?></td>
                         <td class="actions">
                             <?= $this->Html->link(__('View'), ['action' => 'view', $category->slug]) ?>
                             <?= $this->Html->link(__('Edit'), ['action' => 'edit', $category->slug]) ?>

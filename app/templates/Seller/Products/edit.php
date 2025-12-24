@@ -23,15 +23,13 @@
             <?= $this->Form->create($product) ?>
             <fieldset>
                 <legend><?= __('Edit Product') ?></legend>
-                <?php
-                    echo $this->Form->control('category_id', ['options' => $categories]);
-                    echo $this->Form->control('name');
-                    echo $this->Form->control('slug');
-                    echo $this->Form->control('description');
-                    echo $this->Form->control('image_link');
-                    echo $this->Form->control('stock');
-                    echo $this->Form->control('price');
-                ?>
+                <?= $this->Form->control('category_id', ['options' => $categories]) ?>
+                <?= $this->Form->control('name') ?>
+                <?= $this->Form->control('slug') ?>
+                <?= $this->Form->control('description') ?>
+                <?= $this->Form->control('image_link') ?>
+                <?= $this->Form->control('stock') ?>
+                <?= $this->Form->control('price') ?>
             </fieldset>
             <?= $this->Form->button(__('Submit')) ?>
             <?= $this->Form->end() ?>

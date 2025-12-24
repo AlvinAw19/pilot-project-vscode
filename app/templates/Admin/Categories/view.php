@@ -8,8 +8,8 @@
     <aside class="column">
         <div class="side-nav">
             <h4 class="heading"><?= __('Actions') ?></h4>
-            <?= $this->Html->link(__('Edit Category'), ['action' => 'edit', $category->id], ['class' => 'side-nav-item']) ?>
-            <?= $this->Form->postLink(__('Delete Category'), ['action' => 'delete', $category->id], ['confirm' => __('Are you sure you want to delete # {0}?', $category->id), 'class' => 'side-nav-item']) ?>
+            <?= $this->Html->link(__('Edit Category'), ['action' => 'edit', $category->slug], ['class' => 'side-nav-item']) ?>
+            <?= $this->Form->postLink(__('Delete Category'), ['action' => 'delete', $category->slug], ['confirm' => __('Are you sure you want to delete # {0}?', $category->id), 'class' => 'side-nav-item']) ?>
             <?= $this->Html->link(__('List Categories'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
             <?= $this->Html->link(__('New Category'), ['action' => 'add'], ['class' => 'side-nav-item']) ?>
         </div>
@@ -37,10 +37,6 @@
                 <tr>
                     <th><?= __('Modified') ?></th>
                     <td><?= h($category->modified) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Deleted') ?></th>
-                    <td><?= h($category->deleted) ?></td>
                 </tr>
             </table>
         </div>
