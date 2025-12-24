@@ -46,9 +46,8 @@ class UsersController extends AppController
             $user->role = 'buyer';
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('The user has been saved.'));
-                // TODO: redirect to product catalog when logged in in function 6
 
-                return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
+                return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
             }
             $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
@@ -68,15 +67,16 @@ class UsersController extends AppController
         $result = $this->Authentication->getResult();
         // regardless of POST or GET, redirect if user is logged in
         if ($result && $result->isValid()) {
-            // TODO: redirect to individual page after set up of all role during function 6
             $identity = $this->request->getAttribute('identity');
             if ($identity && ($identity->get('role') === User::ROLE_ADMIN)) {
                 return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
             } elseif ($identity && ($identity->get('role') === User::ROLE_SELLER)) {
                 return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
+            } elseif ($identity && ($identity->get('role') === User::ROLE_BUYER)) {
+                return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
             }
 
-            return $this->redirect(['controller' => 'Pages', 'action' => 'display']);
+            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
         }
         // display error if user submitted and authentication failed
         if ($this->request->is('post') && ($result === null || !$result->isValid())) {

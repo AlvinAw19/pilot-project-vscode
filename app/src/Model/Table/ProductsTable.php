@@ -47,6 +47,9 @@ class ProductsTable extends Table
 
         $this->addBehavior('Timestamp');
         $this->addBehavior('Muffin/Trash.Trash');
+        $this->addBehavior('Search.Search');
+
+        $this->searchFilters();
 
         $this->belongsTo('Categories', [
             'foreignKey' => 'category_id',
@@ -126,5 +129,27 @@ class ProductsTable extends Table
         if ($entity->isNew() && !$entity->slug) {
             $entity->slug = strtolower(Text::slug($entity->name));
         }
+    }
+
+    /**
+     * Configure search filters for the Search plugin
+     *
+     * @return void
+     */
+    private function searchFilters(): void
+    {
+        $this->searchManager()
+            ->add('q', 'Search.Like', [
+                'before' => true,
+                'after' => true,
+                'mode' => 'or',
+                'comparison' => 'LIKE',
+                'wildcardAny' => '*',
+                'wildcardOne' => '?',
+                'fields' => ['Products.name', 'Products.description'],
+            ])
+            ->add('category_id', 'Search.Value', [
+                'fields' => ['Products.category_id'],
+            ]);
     }
 }

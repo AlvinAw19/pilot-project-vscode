@@ -79,6 +79,7 @@ class Application extends BaseApplication implements
         // Load more plugins here
         $this->addPlugin('Muffin/Trash');
         $this->addPlugin('Authorization');
+        $this->addPlugin('Search');
     }
 
     /**

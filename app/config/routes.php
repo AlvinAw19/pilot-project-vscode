@@ -58,6 +58,11 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
 
         /*
+         * Buyer route - connects to Catalogs index action
+         */
+        $builder->connect('/buyer', ['controller' => 'Catalogs', 'action' => 'index']);
+
+        /*
          * ...and connect the rest of 'Pages' controller's URLs.
          */
         $builder->connect('/pages/*', 'Pages::display');
