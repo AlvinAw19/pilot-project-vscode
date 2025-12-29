@@ -11,6 +11,7 @@ use Cake\ORM\TableRegistry;
  *
  * @property \App\Model\Table\OrdersTable $Orders
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
+ * @property \App\Controller\Component\OrderMailerComponent $OrderMailer
  * @method \App\Model\Entity\Order[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class OrdersController extends AppController
@@ -27,6 +28,7 @@ class OrdersController extends AppController
         $this->loadModel('CartItems');
         $this->loadModel('OrderItems');
         $this->loadModel('Payments');
+        $this->loadComponent('OrderMailer');
     }
 
     /**
@@ -181,6 +183,17 @@ class OrdersController extends AppController
                 }
 
                 $connection->commit();
+
+                // Reload order with all associations for email
+                $order = $this->Orders->get($order->id, [
+                    'contain' => ['Buyers', 'OrderItems' => ['Products' => ['Users']], 'Payments'],
+                ]);
+
+                // Send confirmation email to buyer
+                $this->OrderMailer->sendOrderConfirmation($order);
+
+                // Send notification to sellers
+                $this->OrderMailer->sendSellerNotification($order->order_items, $order);
 
                 $this->Flash->success(__('Order placed successfully! Order ID: {0}', $order->id));
                 return $this->redirect(['action' => 'view', $order->id]);

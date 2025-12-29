@@ -11,6 +11,7 @@ use App\Model\Entity\OrderItem;
  *
  * @property \App\Model\Table\OrderItemsTable $OrderItems
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
+ * @property \App\Controller\Component\OrderMailerComponent $OrderMailer
  * @method \App\Model\Entity\OrderItem[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class OrdersController extends AppController
@@ -25,6 +26,7 @@ class OrdersController extends AppController
         parent::initialize();
         $this->loadModel('OrderItems');
         $this->loadModel('Products');
+        $this->loadComponent('OrderMailer');
     }
 
     /**
@@ -114,6 +116,12 @@ class OrdersController extends AppController
             $orderItem->delivery_status = $newStatus;
             if ($this->OrderItems->save($orderItem)) {
                 $updatedCount++;
+                
+                // Send delivery status update email to buyer
+                $orderItemWithAssociations = $this->OrderItems->get($orderItem->id, [
+                    'contain' => ['Orders' => ['Buyers'], 'Products'],
+                ]);
+                $this->OrderMailer->sendDeliveryStatusUpdate($orderItemWithAssociations);
             } else {
                 $errors[] = __('Failed to update item #{0}', $orderItem->id);
             }

@@ -76,8 +76,8 @@
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?php if ($item->product && $item->product->seller): ?>
-                                        <?= h($item->product->seller->name) ?>
+                                    <?php if ($item->product && $item->product->user): ?>
+                                        <?= h($item->product->user->name) ?>
                                     <?php else: ?>
                                         <em><?= __('N/A') ?></em>
                                     <?php endif; ?>

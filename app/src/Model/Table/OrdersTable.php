@@ -89,7 +89,7 @@ class OrdersTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->existsIn('buyer_id', 'Users'), ['errorField' => 'buyer_id']);
+        $rules->add($rules->existsIn('buyer_id', 'Buyers'), ['errorField' => 'buyer_id']);
 
         return $rules;
     }
