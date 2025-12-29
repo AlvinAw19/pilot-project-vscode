@@ -95,6 +95,7 @@ return function (RouteBuilder $routes): void {
 
     $routes->prefix('Buyer', function (RouteBuilder $builder): void {
         $builder->connect('/cart', ['controller' => 'Cart', 'action' => 'index']);
+        $builder->connect('/orders', ['controller' => 'Orders', 'action' => 'index']);
         $builder->fallbacks();
     });
 

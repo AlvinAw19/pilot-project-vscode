@@ -46,6 +46,9 @@ class UsersTable extends Table
         $this->hasMany('CartItems', [
             'foreignKey' => 'buyer_id',
         ]);
+        $this->hasMany('Orders', [
+            'foreignKey' => 'buyer_id',
+        ]);
     }
 
     /**

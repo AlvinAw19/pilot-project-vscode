@@ -63,6 +63,9 @@ class ProductsTable extends Table
         $this->hasMany('CartItems', [
             'foreignKey' => 'product_id',
         ]);
+        $this->hasMany('OrderItems', [
+            'foreignKey' => 'product_id',
+        ]);
     }
 
     /**

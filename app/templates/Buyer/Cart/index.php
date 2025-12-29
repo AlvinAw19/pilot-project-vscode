@@ -77,10 +77,11 @@
         <div style="margin-top: 20px;">
             <?= $this->Html->link(__('Continue Shopping'), ['controller' => 'Catalogs', 'action' => 'index', 'prefix' => false], ['class' => 'button']) ?>
             <span style="margin: 0 10px;">|</span>
-            <?= $this->Html->link(__('Proceed to Checkout'), '#', ['class' => 'button', 'disabled' => true, 'style' => 'background-color: #ccc;']) ?>
-            <small style="display: block; margin-top: 10px; color: #666;">
-                <em><?= __('Note: Checkout functionality will be implemented in a future update.') ?></em>
-            </small>
+            <?= $this->Html->link(
+                __('Proceed to Checkout'),
+                ['controller' => 'Orders', 'action' => 'checkout'],
+                ['class' => 'button button-primary']
+            ) ?>
         </div>
     <?php else: ?>
         <div class="message" style="padding: 40px; text-align: center; background: #f8f8f8; border-radius: 4px;">
