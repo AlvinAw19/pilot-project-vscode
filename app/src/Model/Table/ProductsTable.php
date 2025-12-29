@@ -60,6 +60,9 @@ class ProductsTable extends Table
             'foreignKey' => 'seller_id',
             'joinType' => 'INNER',
         ]);
+        $this->hasMany('CartItems', [
+            'foreignKey' => 'product_id',
+        ]);
     }
 
     /**

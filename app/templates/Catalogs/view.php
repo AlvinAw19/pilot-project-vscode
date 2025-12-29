@@ -77,6 +77,35 @@
                     <?= $this->Text->autoParagraph(h($product->description)); ?>
                 </blockquote>
             </div>
+            <br>
+            <?php if ($product->stock > 0): ?>
+                <div style="margin-bottom: 15px;">
+                    <label for="quantity" style="display: inline-block; margin-right: 10px; font-weight: bold;">
+                        <?= __('Quantity:') ?>
+                    </label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?= h($product->stock) ?>" style="width: 80px; padding: 5px;">
+                </div>
+                <?php
+                $identity = $this->request->getAttribute('identity');
+                if ($identity && $identity->role === 'buyer'):
+                ?>
+                    <?= $this->Html->link(
+                        __('Add to Cart'),
+                        ['controller' => 'Cart', 'action' => 'add', $product->id, 'prefix' => 'Buyer'],
+                        ['class' => 'button', 'style' => 'background-color: #dc3545;']
+                    ) ?>
+                <?php else: ?>
+                    <?= $this->Html->link(
+                        __('Login to Add to Cart'),
+                        ['controller' => 'Users', 'action' => 'login', 'prefix' => false],
+                        ['class' => 'button', 'style' => 'background-color: #dc3545;']
+                    ) ?>
+                <?php endif; ?>
+            <?php else: ?>
+                <div style="padding: 20px; background: #fee; border-radius: 4px;">
+                    <strong style="color: #c00;"><?= __('Out of Stock') ?></strong>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

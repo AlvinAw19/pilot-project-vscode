@@ -42,6 +42,7 @@ class CategoriesController extends AppController
         $category = $this->Categories
             ->find()
             ->where(['Categories.slug' => $slug])
+            ->contain(['Products'])
             ->firstOrFail();
 
         $this->Authorization->authorize($category);
