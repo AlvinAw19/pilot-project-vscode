@@ -86,6 +86,12 @@ class CartController extends AppController
             return $this->redirect($this->referer());
         }
 
+        // Get quantity from request (default to 1 if not provided)
+        $requestedQuantity = (int)$this->request->getData('quantity', 1);
+        if ($requestedQuantity < 1) {
+            $requestedQuantity = 1;
+        }
+
         // Check if product already in cart
         $existingCartItem = $this->CartItems->find()
             ->where([
@@ -95,8 +101,8 @@ class CartController extends AppController
             ->first();
 
         if ($existingCartItem) {
-            // Increment quantity
-            $newQuantity = $existingCartItem->quantity + 1;
+            // Increment quantity by requested amount
+            $newQuantity = $existingCartItem->quantity + $requestedQuantity;
 
             // Validate stock for new quantity
             if ($newQuantity > $product->stock) {
@@ -111,11 +117,17 @@ class CartController extends AppController
                 $this->Flash->error(__('Could not update cart. Please try again.'));
             }
         } else {
-            // Create new cart item
+            // Validate requested quantity doesn't exceed stock
+            if ($requestedQuantity > $product->stock) {
+                $this->Flash->error(__('Cannot add {0} items. Only {1} available in stock.', $requestedQuantity, $product->stock));
+                return $this->redirect($this->referer());
+            }
+
+            // Create new cart item with requested quantity
             $cartItem = $this->CartItems->newEntity([
                 'buyer_id' => $buyerId,
                 'product_id' => $productId,
-                'quantity' => 1,
+                'quantity' => $requestedQuantity,
             ]);
 
             if ($this->CartItems->save($cartItem)) {

@@ -79,21 +79,30 @@
             </div>
             <br>
             <?php if ($product->stock > 0): ?>
-                <div style="margin-bottom: 15px;">
-                    <label for="quantity" style="display: inline-block; margin-right: 10px; font-weight: bold;">
-                        <?= __('Quantity:') ?>
-                    </label>
-                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?= h($product->stock) ?>" style="width: 80px; padding: 5px;">
-                </div>
                 <?php
                 $identity = $this->request->getAttribute('identity');
                 if ($identity && $identity->role === 'buyer'):
                 ?>
-                    <?= $this->Html->link(
-                        __('Add to Cart'),
-                        ['controller' => 'Cart', 'action' => 'add', $product->id, 'prefix' => 'Buyer'],
-                        ['class' => 'button', 'style' => 'background-color: #dc3545;']
-                    ) ?>
+                    <?= $this->Form->create(null, [
+                        'url' => ['controller' => 'Cart', 'action' => 'add', $product->id, 'prefix' => 'Buyer'],
+                        'type' => 'post'
+                    ]) ?>
+                    <div style="margin-bottom: 15px;">
+                        <?= $this->Form->control('quantity', [
+                            'type' => 'number',
+                            'label' => __('Quantity:'),
+                            'value' => 1,
+                            'min' => 1,
+                            'max' => $product->stock,
+                            'style' => 'width: 100px;',
+                            'required' => true
+                        ]) ?>
+                    </div>
+                    <?= $this->Form->button(__('Add to Cart'), [
+                        'class' => 'button',
+                        'style' => 'background-color: #dc3545;'
+                    ]) ?>
+                    <?= $this->Form->end() ?>
                 <?php else: ?>
                     <?= $this->Html->link(
                         __('Login to Add to Cart'),
