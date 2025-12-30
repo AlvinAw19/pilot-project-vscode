@@ -43,6 +43,9 @@ class UsersTable extends Table
         $this->addBehavior('Muffin/Trash.Trash');
 
         $this->hasMany('Products');
+        $this->hasMany('CartItems', [
+            'foreignKey' => 'buyer_id',
+        ]);
     }
 
     /**

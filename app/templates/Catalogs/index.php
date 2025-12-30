@@ -9,7 +9,25 @@
  */
 ?>
 <div class="catalogs catalog content">
-    <h3><?= __('Product Catalog') ?></h3>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3><?= __('Product Catalog') ?></h3>
+        <?php
+        $identity = $this->request->getAttribute('identity');
+        if ($identity && $identity->role === 'buyer'):
+        ?>
+            <?= $this->Html->link(
+                __('My Cart'),
+                ['controller' => 'Cart', 'action' => 'index', 'prefix' => 'Buyer'],
+                ['class' => 'button', 'style' => 'background-color: #dc3545;']
+            ) ?>
+        <?php else: ?>
+            <?= $this->Html->link(
+                __('Login to View Cart'),
+                ['controller' => 'Users', 'action' => 'login', 'prefix' => false],
+                ['class' => 'button', 'style' => 'background-color: #dc3545;']
+            ) ?>
+        <?php endif; ?>
+    </div>
 
     <!-- Search Form -->
     <div class="search">
