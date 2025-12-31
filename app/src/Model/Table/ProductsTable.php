@@ -150,4 +150,21 @@ class ProductsTable extends Table
                 'fields' => ['Products.category_id'],
             ]);
     }
+
+    /**
+     * Custom finder for available products (not deleted, in stock)
+     *
+     * @param \Cake\ORM\Query $query The query object
+     * @param array $options Options array
+     * @return \Cake\ORM\Query
+     */
+    public function findAvailable(\Cake\ORM\Query $query, array $options): \Cake\ORM\Query
+    {
+        return $query
+            ->where([
+                $this->aliasField('deleted') . ' IS' => null,
+                $this->aliasField('stock') . ' >' => 0,
+            ]);
+    }
 }
+

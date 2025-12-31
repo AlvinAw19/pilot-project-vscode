@@ -60,23 +60,18 @@ class CatalogsController extends AppController
         $searchTerm = $this->request->getQuery('search');
         $categoryId = $this->request->getQuery('category_id');
 
-        // Get all products
-        $query = $this->Products->find('search', [
-            'search' => $this->request->getQueryParams(),
-        ])
-            ->where([
-                'Products.deleted IS' => null,
-                'Products.stock >' => 0,
-            ])
+        // Get all products using custom finder
+        $query = $this->Products
+            ->find('search', ['search' => $this->request->getQueryParams()])
+            ->find('available')
             ->contain(['Categories'])
             ->order(['Products.created' => 'DESC']);
 
         $products = $this->paginate($query);
 
-        // Get all categories
-        $categories = $this->Categories->find()
-            ->where(['Categories.deleted IS' => null])
-            ->order(['Categories.name' => 'ASC'])
+        // Get all categories using custom finder
+        $categories = $this->Categories
+            ->find('active')
             ->all();
 
         // Get selected category if filtering
@@ -98,12 +93,8 @@ class CatalogsController extends AppController
     public function view($slug)
     {
         $product = $this->Products
-            ->find()
-            ->where([
-                'Products.slug' => $slug,
-                'Products.deleted IS' => null,
-                'Products.stock >' => 0,
-            ])
+            ->find('available')
+            ->where(['Products.slug' => $slug])
             ->contain(['Categories', 'Users'])
             ->firstOrFail();
 
