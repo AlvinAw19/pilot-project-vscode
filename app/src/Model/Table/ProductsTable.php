@@ -140,7 +140,7 @@ class ProductsTable extends Table
     private function searchFilters(): void
     {
         $this->searchManager()
-            ->add('q', 'Search.Like', [
+            ->add('search', 'Search.Like', [
                 'before' => true,
                 'after' => true,
                 'mode' => 'or',

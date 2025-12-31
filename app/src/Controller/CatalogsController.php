@@ -18,6 +18,20 @@ use Cake\Event\EventInterface;
 class CatalogsController extends AppController
 {
     /**
+     * Initialize method
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->loadModel('Products');
+        $this->loadModel('Categories');
+
+        $this->Authorization->skipAuthorization();
+    }
+
+    /**
      * beforeFilter callback.
      *
      * Allows all actions to be accessed without authentication
@@ -33,21 +47,6 @@ class CatalogsController extends AppController
     }
 
     /**
-     * Initialize method
-     *
-     * @return void
-     */
-    public function initialize(): void
-    {
-        parent::initialize();
-        $this->loadModel('Products');
-        $this->loadModel('Categories');
-
-        // Skip authorization for all actions in this controller
-        $this->Authorization->skipAuthorization();
-    }
-
-    /**
      * Display all available products with pagination
      *
      * Shows only products where deleted IS NULL and stock > 0,
@@ -57,6 +56,10 @@ class CatalogsController extends AppController
      */
     public function index()
     {
+        // Get query parameters
+        $searchTerm = $this->request->getQuery('search');
+        $categoryId = $this->request->getQuery('category_id');
+
         // Get all products
         $query = $this->Products->find('search', [
             'search' => $this->request->getQueryParams(),
@@ -76,15 +79,10 @@ class CatalogsController extends AppController
             ->order(['Categories.name' => 'ASC'])
             ->all();
 
-        // Search term if any (use for filtering)
-        $searchTerm = $this->request->getQuery('q');
-        // Category ID if any (use for filtering)
-        $categoryId = $this->request->getQuery('category_id');
-
-        // Get selected category if filtering to display its name
+        // Get selected category if filtering
         $selectedCategory = null;
         if ($categoryId) {
-            $selectedCategory = $this->Categories->get($categoryId);
+            $selectedCategory = $categories->firstMatch(['id' => $categoryId]);
         }
 
         $this->set(compact('products', 'categories', 'searchTerm', 'categoryId', 'selectedCategory'));
@@ -101,7 +99,11 @@ class CatalogsController extends AppController
     {
         $product = $this->Products
             ->find()
-            ->where(['Products.slug' => $slug, 'Products.deleted IS' => null])
+            ->where([
+                'Products.slug' => $slug,
+                'Products.deleted IS' => null,
+                'Products.stock >' => 0,
+            ])
             ->contain(['Categories', 'Users'])
             ->firstOrFail();
 
