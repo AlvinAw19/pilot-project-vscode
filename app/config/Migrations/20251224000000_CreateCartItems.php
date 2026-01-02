@@ -35,6 +35,10 @@ class CreateCartItems extends AbstractMigration
             'default' => null,
             'null' => false,
         ]);
+        $table->addColumn('deleted', 'datetime', [
+            'default' => null,
+            'null' => true,
+        ]);
         $table->addIndex(['buyer_id']);
         $table->addIndex(['product_id']);
         $table->addForeignKey('buyer_id', 'users', 'id', ['delete' => 'CASCADE', 'update' => 'CASCADE']);

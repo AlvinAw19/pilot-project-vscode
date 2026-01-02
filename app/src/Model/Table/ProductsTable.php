@@ -14,6 +14,7 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\CategoriesTable&\Cake\ORM\Association\BelongsTo $Categories
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
+ * @property \App\Model\Table\CartItemsTable&\Cake\ORM\Association\HasMany $CartItems
  * @method \App\Model\Entity\Product newEmptyEntity()
  * @method \App\Model\Entity\Product newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Product[] newEntities(array $data, array $options = [])
@@ -60,9 +61,8 @@ class ProductsTable extends Table
             'foreignKey' => 'seller_id',
             'joinType' => 'INNER',
         ]);
-        $this->hasMany('CartItems', [
-            'foreignKey' => 'product_id',
-        ]);
+
+        $this->hasMany('CartItems', ['foreignKey' => 'product_id']);
     }
 
     /**

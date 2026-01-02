@@ -44,6 +44,7 @@ class CartItemsTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('Muffin/Trash.Trash');
 
         $this->belongsTo('Users', [
             'foreignKey' => 'buyer_id',
@@ -74,8 +75,11 @@ class CartItemsTable extends Table
         $validator
             ->integer('quantity')
             ->requirePresence('quantity', 'create')
-            ->notEmptyString('quantity')
-            ->greaterThan('quantity', 0, 'Quantity must be at least 1');
+            ->notEmptyString('quantity');
+
+        $validator
+            ->dateTime('deleted')
+            ->allowEmptyDateTime('deleted');
 
         return $validator;
     }
@@ -93,5 +97,19 @@ class CartItemsTable extends Table
         $rules->add($rules->existsIn('product_id', 'Products'), ['errorField' => 'product_id']);
 
         return $rules;
+    }
+
+    /**
+     * Custom finder for buyer id
+     *
+     * @param \Cake\ORM\Query $query The query object
+     * @param array<string, mixed> $options Options array
+     * @return \Cake\ORM\Query
+     */
+    public function findBuyerCartItems(\Cake\ORM\Query $query, array $options): \Cake\ORM\Query
+    {
+        return $query
+            ->where(['CartItems.buyer_id' => $options['buyer_id']])
+            ->contain(['Products']);
     }
 }
