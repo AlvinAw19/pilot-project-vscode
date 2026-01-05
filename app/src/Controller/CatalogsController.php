@@ -81,13 +81,7 @@ class CatalogsController extends AppController
         // Category ID if any (use for filtering)
         $categoryId = $this->request->getQuery('category_id');
 
-        // Get selected category if filtering to display its name
-        $selectedCategory = null;
-        if ($categoryId) {
-            $selectedCategory = $this->Categories->get($categoryId);
-        }
-
-        $this->set(compact('products', 'categories', 'searchTerm', 'categoryId', 'selectedCategory'));
+        $this->set(compact('products', 'categories', 'searchTerm', 'categoryId'));
     }
 
     /**

@@ -39,7 +39,7 @@ class PaymentsTable extends Table
         parent::initialize($config);
 
         $this->setTable('payments');
-        $this->setDisplayField('id');
+        $this->setDisplayField('payment_type');
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
@@ -58,10 +58,6 @@ class PaymentsTable extends Table
      */
     public function validationDefault(Validator $validator): Validator
     {
-        $validator
-            ->integer('order_id')
-            ->notEmptyString('order_id');
-
         $validator
             ->scalar('payment_type')
             ->maxLength('payment_type', 255)

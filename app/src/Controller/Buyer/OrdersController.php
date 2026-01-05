@@ -9,6 +9,9 @@ use App\Controller\AppController;
  * Orders Controller
  *
  * @property \App\Model\Table\OrdersTable $Orders
+ * @property \App\Model\Table\OrderItemsTable $OrderItems
+ * @property \App\Model\Table\PaymentsTable $Payments
+ * @property \App\Model\Table\CartItemsTable $CartItems
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  * @method \App\Model\Entity\Order[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
@@ -34,7 +37,8 @@ class OrdersController extends AppController
      */
     public function index()
     {
-        $this->Authorization->skipAuthorization();
+        $order = $this->Orders->newEmptyEntity();
+        $this->Authorization->authorize($order, 'index');
 
         $query = $this->Orders->find()
             ->where(['buyer_id' => $this->request->getAttribute('identity')->id])
@@ -54,12 +58,12 @@ class OrdersController extends AppController
      */
     public function view($id = null)
     {
-        $this->Authorization->skipAuthorization();
-
         /** @var \App\Model\Entity\Order $order */
         $order = $this->Orders->get($id, [
-            'contain' => ['OrderItems' => ['Products' => ['Users']], 'Payments']
+            'contain' => ['OrderItems' => ['Products' => ['Users']], 'Payments'],
         ]);
+
+        $this->Authorization->authorize($order);
 
         $this->set(compact('order'));
     }
@@ -71,7 +75,8 @@ class OrdersController extends AppController
      */
     public function checkout()
     {
-        $this->Authorization->skipAuthorization();
+        $order = $this->Orders->newEmptyEntity();
+        $this->Authorization->authorize($order, 'checkout');
 
         $buyerId = $this->request->getAttribute('identity')->id;
 
@@ -83,6 +88,7 @@ class OrdersController extends AppController
 
         if ($cartItems->isEmpty()) {
             $this->Flash->error(__('Your cart is empty.'));
+
             return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
         }
 
@@ -134,8 +140,8 @@ class OrdersController extends AppController
                 $this->Orders->getConnection()->commit();
 
                 $this->Flash->success(__('Order completed successfully.'));
-                return $this->redirect(['action' => 'view', $order->id]);
 
+                return $this->redirect(['action' => 'view', $order->id]);
             } catch (\Exception $e) {
                 $this->Orders->getConnection()->rollback();
                 $this->Flash->error(__('Order could not be completed. Please try again.'));

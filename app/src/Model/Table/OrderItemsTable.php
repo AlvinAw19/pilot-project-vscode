@@ -65,30 +65,17 @@ class OrderItemsTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->integer('order_id')
-            ->notEmptyString('order_id');
-
-        $validator
-            ->integer('product_id')
-            ->notEmptyString('product_id');
-
-        $validator
             ->decimal('price')
-            ->requirePresence('price', 'create')
-            ->notEmptyString('price')
-            ->greaterThan('price', 0);
+            ->notEmptyString('price');
 
         $validator
             ->integer('quantity')
             ->requirePresence('quantity', 'create')
-            ->notEmptyString('quantity')
-            ->greaterThan('quantity', 0);
+            ->notEmptyString('quantity');
 
         $validator
             ->decimal('amount')
-            ->requirePresence('amount', 'create')
-            ->notEmptyString('amount')
-            ->greaterThanOrEqual('amount', 0);
+            ->notEmptyString('amount');
 
         $validator
             ->scalar('delivery_status')
@@ -117,43 +104,5 @@ class OrderItemsTable extends Table
         $rules->add($rules->existsIn('product_id', 'Products'), ['errorField' => 'product_id']);
 
         return $rules;
-    }
-
-    /**
-     * Custom finder for order items by seller
-     *
-     * @param \Cake\ORM\Query $query
-     * @param array<string, mixed> $options
-     * @return \Cake\ORM\Query
-     */
-    public function findBySeller($query, $options)
-    {
-        $sellerId = $options['seller_id'] ?? null;
-        if (!$sellerId) {
-            throw new \InvalidArgumentException('seller_id is required');
-        }
-
-        return $query->contain(['Orders' => ['Users'], 'Products'])
-            ->matching('Products', function ($q) use ($sellerId) {
-                return $q->where(['Products.seller_id' => $sellerId]);
-            })
-            ->order(['OrderItems.created' => 'DESC']);
-    }
-
-    /**
-     * Custom finder for order items by delivery status
-     *
-     * @param \Cake\ORM\Query $query
-     * @param array<string, mixed> $options
-     * @return \Cake\ORM\Query
-     */
-    public function findByDeliveryStatus($query, $options)
-    {
-        $status = $options['status'] ?? null;
-        if (!$status) {
-            throw new \InvalidArgumentException('status is required');
-        }
-
-        return $query->where(['OrderItems.delivery_status' => $status]);
     }
 }

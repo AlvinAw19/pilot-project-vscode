@@ -67,14 +67,8 @@ class OrdersTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->integer('buyer_id')
-            ->notEmptyString('buyer_id');
-
-        $validator
             ->decimal('total_amount')
-            ->requirePresence('total_amount', 'create')
-            ->notEmptyString('total_amount')
-            ->greaterThanOrEqual('total_amount', 0);
+            ->notEmptyString('total_amount');
 
         return $validator;
     }
@@ -91,41 +85,5 @@ class OrdersTable extends Table
         $rules->add($rules->existsIn('buyer_id', 'Users'), ['errorField' => 'buyer_id']);
 
         return $rules;
-    }
-
-    /**
-     * Custom finder for buyer's orders
-     *
-     * @param \Cake\ORM\Query $query
-     * @param array<string, mixed> $options
-     * @return \Cake\ORM\Query
-     */
-    public function findByBuyer($query, $options)
-    {
-        $buyerId = $options['buyer_id'] ?? null;
-        if (!$buyerId) {
-            throw new \InvalidArgumentException('buyer_id is required');
-        }
-
-        return $query->where(['Orders.buyer_id' => $buyerId])
-            ->contain(['OrderItems' => ['Products'], 'Payments'])
-            ->order(['Orders.created' => 'DESC']);
-    }
-
-    /**
-     * Custom finder for orders with status
-     *
-     * @param \Cake\ORM\Query $query
-     * @param array<string, mixed> $options
-     * @return \Cake\ORM\Query
-     */
-    public function findByStatus($query, $options)
-    {
-        $status = $options['status'] ?? null;
-        if (!$status) {
-            throw new \InvalidArgumentException('status is required');
-        }
-
-        return $query->where(['Orders.status' => $status]);
     }
 }

@@ -21,13 +21,10 @@ class OrdersController extends AppController
      */
     public function index()
     {
-        $this->Authorization->skipAuthorization();
+        $order = $this->Orders->newEmptyEntity();
+        $this->Authorization->authorize($order, 'index');
 
-        $orders = $this->paginate(
-            $this->Orders
-                ->find()
-                ->contain(['Users', 'OrderItems', 'Payments'])
-        );
+        $orders = $this->paginate($this->Orders->find()->contain(['Users','OrderItems','Payments']));
 
         $this->set(compact('orders'));
     }
@@ -41,15 +38,11 @@ class OrdersController extends AppController
      */
     public function view($id = null)
     {
-        $this->Authorization->skipAuthorization();
-
         $order = $this->Orders->get($id, [
-            'contain' => [
-                'Users', 
-                'Payments', 
-                'OrderItems' => ['Products' => ['Users']]  
-            ],
-        ]);
+            'contain' => ['Users', 'Payments', 'OrderItems' => ['Products' => ['Users']]],
+            ]);
+
+        $this->Authorization->authorize($order);
 
         $this->set(compact('order'));
     }
