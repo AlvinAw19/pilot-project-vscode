@@ -133,7 +133,7 @@ class OrderItemsTable extends Table
             throw new \InvalidArgumentException('seller_id is required');
         }
 
-        return $query->contain(['Orders' => ['Buyers'], 'Products'])
+        return $query->contain(['Orders' => ['Users'], 'Products'])
             ->matching('Products', function ($q) use ($sellerId) {
                 return $q->where(['Products.seller_id' => $sellerId]);
             })
