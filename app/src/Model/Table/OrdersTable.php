@@ -46,8 +46,7 @@ class OrdersTable extends Table
 
         $this->addBehavior('Timestamp');
 
-        $this->belongsTo('Buyers', [
-            'className' => 'Users',
+        $this->belongsTo('Users', [
             'foreignKey' => 'buyer_id',
             'joinType' => 'INNER',
         ]);
@@ -92,5 +91,41 @@ class OrdersTable extends Table
         $rules->add($rules->existsIn('buyer_id', 'Users'), ['errorField' => 'buyer_id']);
 
         return $rules;
+    }
+
+    /**
+     * Custom finder for buyer's orders
+     *
+     * @param \Cake\ORM\Query $query
+     * @param array<string, mixed> $options
+     * @return \Cake\ORM\Query
+     */
+    public function findByBuyer($query, $options)
+    {
+        $buyerId = $options['buyer_id'] ?? null;
+        if (!$buyerId) {
+            throw new \InvalidArgumentException('buyer_id is required');
+        }
+
+        return $query->where(['Orders.buyer_id' => $buyerId])
+            ->contain(['OrderItems' => ['Products'], 'Payments'])
+            ->order(['Orders.created' => 'DESC']);
+    }
+
+    /**
+     * Custom finder for orders with status
+     *
+     * @param \Cake\ORM\Query $query
+     * @param array<string, mixed> $options
+     * @return \Cake\ORM\Query
+     */
+    public function findByStatus($query, $options)
+    {
+        $status = $options['status'] ?? null;
+        if (!$status) {
+            throw new \InvalidArgumentException('status is required');
+        }
+
+        return $query->where(['Orders.status' => $status]);
     }
 }

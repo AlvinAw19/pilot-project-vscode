@@ -40,14 +40,7 @@ class OrdersController extends AppController
 
         $sellerId = $this->request->getAttribute('identity')->id;
 
-        // Get all order items for products belonging to this seller
-        $query = $this->OrderItems
-            ->find()
-            ->contain(['Orders' => ['Buyers'], 'Products'])
-            ->matching('Products', function ($q) use ($sellerId) {
-                return $q->where(['Products.seller_id' => $sellerId]);
-            })
-            ->order(['OrderItems.created' => 'DESC']);
+        $query = $this->OrderItems->find('bySeller', ['seller_id' => $sellerId]);
 
         $orderItems = $this->paginate($query);
 

@@ -4,52 +4,38 @@
  * @var \App\Model\Entity\Order[] $orders
  */
 ?>
-<div class="orders index content">
+<div>
     <h3><?= __('Order Management') ?></h3>
-    
-    <div class="table-responsive">
-        <table>
-            <thead>
+
+    <table>
+        <thead>
+            <tr>
+                <th><?= $this->Paginator->sort('id', __('Order ID')) ?></th>
+                <th><?= $this->Paginator->sort('buyer_id', __('Buyer')) ?></th>
+                <th><?= __('Items') ?></th>
+                <th><?= $this->Paginator->sort('total_amount', __('Total Amount')) ?></th>
+                <th><?= __('Payment Type') ?></th>
+                <th><?= $this->Paginator->sort('created', __('Order Date')) ?></th>
+                <th><?= __('Actions') ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($orders as $order): ?>
                 <tr>
-                    <th><?= $this->Paginator->sort('id', __('Order ID')) ?></th>
-                    <th><?= $this->Paginator->sort('buyer_id', __('Buyer')) ?></th>
-                    <th><?= __('Items') ?></th>
-                    <th><?= $this->Paginator->sort('total_amount', __('Total Amount')) ?></th>
-                    <th><?= __('Payment Type') ?></th>
-                    <th><?= $this->Paginator->sort('created', __('Order Date')) ?></th>
-                    <th class="actions"><?= __('Actions') ?></th>
+                    <td><?= $this->Number->format($order->id) ?></td>
+                    <td><?= $this->Html->link($order->user->name, ['controller' => 'Users', 'action' => 'view', $order->user->id]) ?></td>
+                    <td><?= $this->Number->format(count($order->order_items)) ?> items</td>
+                    <td>$<?= $this->Number->format($order->total_amount, ['places' => 2]) ?></td>
+                    <td><?= h($order->payment->payment_type) ?></td>
+                    <td><?= h($order->created->format('Y-m-d H:i:s')) ?></td>
+                    <td>
+                        <?= $this->Html->link(__('View'), ['action' => 'view', $order->id]) ?>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($orders as $order): ?>
-                    <tr>
-                        <td><?= $this->Number->format($order->id) ?></td>
-                        <td>
-                            <?php if ($order->buyer): ?>
-                                <?= h($order->buyer->name) ?>
-                            <?php else: ?>
-                                <em><?= __('N/A') ?></em>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= $this->Number->format(count($order->order_items)) ?> items</td>
-                        <td>$<?= $this->Number->format($order->total_amount, ['places' => 2]) ?></td>
-                        <td>
-                            <?php if ($order->payment): ?>
-                                <?= h($order->payment->payment_type) ?>
-                            <?php else: ?>
-                                <em><?= __('N/A') ?></em>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= h($order->created->format('Y-m-d H:i:s')) ?></td>
-                        <td class="actions">
-                            <?= $this->Html->link(__('View'), ['action' => 'view', $order->id]) ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-    
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
     <div class="paginator">
         <ul class="pagination">
             <?= $this->Paginator->first('<< ' . __('first')) ?>

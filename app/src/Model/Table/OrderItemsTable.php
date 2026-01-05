@@ -118,4 +118,42 @@ class OrderItemsTable extends Table
 
         return $rules;
     }
+
+    /**
+     * Custom finder for order items by seller
+     *
+     * @param \Cake\ORM\Query $query
+     * @param array<string, mixed> $options
+     * @return \Cake\ORM\Query
+     */
+    public function findBySeller($query, $options)
+    {
+        $sellerId = $options['seller_id'] ?? null;
+        if (!$sellerId) {
+            throw new \InvalidArgumentException('seller_id is required');
+        }
+
+        return $query->contain(['Orders' => ['Buyers'], 'Products'])
+            ->matching('Products', function ($q) use ($sellerId) {
+                return $q->where(['Products.seller_id' => $sellerId]);
+            })
+            ->order(['OrderItems.created' => 'DESC']);
+    }
+
+    /**
+     * Custom finder for order items by delivery status
+     *
+     * @param \Cake\ORM\Query $query
+     * @param array<string, mixed> $options
+     * @return \Cake\ORM\Query
+     */
+    public function findByDeliveryStatus($query, $options)
+    {
+        $status = $options['status'] ?? null;
+        if (!$status) {
+            throw new \InvalidArgumentException('status is required');
+        }
+
+        return $query->where(['OrderItems.delivery_status' => $status]);
+    }
 }

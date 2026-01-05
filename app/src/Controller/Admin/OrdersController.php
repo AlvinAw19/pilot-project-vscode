@@ -6,63 +6,50 @@ namespace App\Controller\Admin;
 use App\Controller\AppController;
 
 /**
- * Orders Controller for Admin
+ * Orders Controller
  *
  * @property \App\Model\Table\OrdersTable $Orders
- * @property \App\Model\Table\OrderItemsTable $OrderItems
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  * @method \App\Model\Entity\Order[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class OrdersController extends AppController
 {
     /**
-     * Initialize method
-     *
-     * @return void
-     */
-    public function initialize(): void
-    {
-        parent::initialize();
-        $this->loadModel('Orders');
-        $this->loadModel('OrderItems');
-    }
-
-    /**
-     * Index method - Display all orders
+     * Index method
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
     public function index()
     {
-        /** @var \App\Model\Entity\Order $order */
-        $order = $this->Orders->newEmptyEntity();
-        $this->Authorization->authorize($order, 'index');
+        $this->Authorization->skipAuthorization();
 
-        $orders = $this->paginate($this->Orders->find()
-            ->contain(['Buyers', 'OrderItems', 'Payments'])
-            ->order(['Orders.created' => 'DESC']));
+        $orders = $this->paginate(
+            $this->Orders
+                ->find()
+                ->contain(['Users', 'OrderItems', 'Payments'])
+        );
 
         $this->set(compact('orders'));
     }
 
     /**
-     * View method - Display order details
+     * View method
      *
-     * @param int|null $id Order id.
+     * @param string|null $id Order id.
      * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function view($id = null)
     {
-        /** @var \App\Model\Entity\Order $order */
+        $this->Authorization->skipAuthorization();
+
         $order = $this->Orders->get($id, [
             'contain' => [
-                'Buyers',
-                'OrderItems' => ['Products' => ['Users']],
-                'Payments',
+                'Users', 
+                'Payments', 
+                'OrderItems' => ['Products' => ['Users']]  
             ],
         ]);
-
-        $this->Authorization->authorize($order, 'view');
 
         $this->set(compact('order'));
     }
