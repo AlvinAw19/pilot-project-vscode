@@ -9,9 +9,7 @@
         <div class="side-nav">
             <h4 class="heading"><?= __('Actions') ?></h4>
             <?= $this->Html->link(__('Back to Catalog'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
-            <?php if ($product->has('category')): ?>
-                <?= $this->Html->link(__('View Category'), ['action' => 'index', '?' => ['category_id' => $product->category->id]], ['class' => 'side-nav-item']) ?>
-            <?php endif; ?>
+            <?= $this->Html->link(__('View Category'), ['action' => 'index', '?' => ['category_id' => $product->category->id]], ['class' => 'side-nav-item']) ?>
         </div>
     </aside>
     <div class="column-responsive column-80">
@@ -20,7 +18,7 @@
             <table>
                 <tr>
                     <th><?= __('Category') ?></th>
-                    <td><?= $product->has('category') ? h($product->category->name) : '' ?></td>
+                    <td><?= h($product->category->name) ?></td>
                 </tr>
                 <tr>
                     <th><?= __('Name') ?></th>
@@ -33,11 +31,10 @@
                 <tr>
                     <th><?= __('Image') ?></th>
                     <td>
-                        <?php if (!empty($product->image_link)): ?>
-                            <?= $this->Html->image($product->image_link, ['width' => 300]) ?>
-                        <?php else: ?>
-                            <em><?= __('No image available') ?></em>
-                        <?php endif; ?>
+                        <?= $this->Html->image(
+                            $product->image_link ?: 'https://img.freepik.com/premium-vector/file-folder-mascot-character-design-vector_166742-4413.jpg?semt=ais_hybrid&w=740&q=80',
+                            ['alt' => h($product->name), 'width' => 120]
+                        ) ?>
                     </td>
                 </tr>
                 <tr>
@@ -77,35 +74,25 @@
                     <?= $this->Text->autoParagraph(h($product->description)); ?>
                 </blockquote>
             </div>
-            <br>
-            <?php if ($product->stock > 0): ?>
-                <div style="margin-bottom: 15px;">
-                    <label for="quantity" style="display: inline-block; margin-right: 10px; font-weight: bold;">
-                        <?= __('Quantity:') ?>
-                    </label>
-                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?= h($product->stock) ?>" style="width: 80px; padding: 5px;">
-                </div>
-                <?php
-                $identity = $this->request->getAttribute('identity');
-                if ($identity && $identity->role === 'buyer'):
-                ?>
-                    <?= $this->Html->link(
-                        __('Add to Cart'),
-                        ['controller' => 'Cart', 'action' => 'add', $product->id, 'prefix' => 'Buyer'],
-                        ['class' => 'button', 'style' => 'background-color: #dc3545;']
-                    ) ?>
+            <div class="add-to-cart">
+                <h4><?= __('Add to Cart') ?></h4>
+                <?php if ($product->stock > 0): ?>
+                    <?= $this->Form->create(null, [
+                        'url' => ['prefix' => 'Buyer', 'controller' => 'CartItems', 'action' => 'add', $product->id]
+                    ]) ?>
+                    <?= $this->Form->control('quantity', [
+                        'type' => 'number',
+                        'min' => 1,
+                        'max' => $product->stock,
+                        'value' => 1,
+                        'label' => __('Quantity')
+                    ]) ?>
+                    <?= $this->Form->button(__('Add to Cart'), ['type' => 'submit']) ?>
+                    <?= $this->Form->end() ?>
                 <?php else: ?>
-                    <?= $this->Html->link(
-                        __('Login to Add to Cart'),
-                        ['controller' => 'Users', 'action' => 'login', 'prefix' => false],
-                        ['class' => 'button', 'style' => 'background-color: #dc3545;']
-                    ) ?>
+                    <p class="out-of-stock"><strong><?= __('Out of Stock') ?></strong></p>
                 <?php endif; ?>
-            <?php else: ?>
-                <div style="padding: 20px; background: #fee; border-radius: 4px;">
-                    <strong style="color: #c00;"><?= __('Out of Stock') ?></strong>
-                </div>
-            <?php endif; ?>
+            </div>
         </div>
     </div>
 </div>

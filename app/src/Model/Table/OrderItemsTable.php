@@ -65,30 +65,17 @@ class OrderItemsTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->integer('order_id')
-            ->notEmptyString('order_id');
-
-        $validator
-            ->integer('product_id')
-            ->notEmptyString('product_id');
-
-        $validator
             ->decimal('price')
-            ->requirePresence('price', 'create')
-            ->notEmptyString('price')
-            ->greaterThan('price', 0);
+            ->notEmptyString('price');
 
         $validator
             ->integer('quantity')
             ->requirePresence('quantity', 'create')
-            ->notEmptyString('quantity')
-            ->greaterThan('quantity', 0);
+            ->notEmptyString('quantity');
 
         $validator
             ->decimal('amount')
-            ->requirePresence('amount', 'create')
-            ->notEmptyString('amount')
-            ->greaterThanOrEqual('amount', 0);
+            ->notEmptyString('amount');
 
         $validator
             ->scalar('delivery_status')

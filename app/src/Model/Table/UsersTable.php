@@ -10,6 +10,9 @@ use Cake\Validation\Validator;
 /**
  * Users Model
  *
+ * @property \App\Model\Table\ProductsTable&\Cake\ORM\Association\HasMany $Products
+ * @property \App\Model\Table\CartItemsTable&\Cake\ORM\Association\HasMany $CartItems
+ * @property \App\Model\Table\OrderItemsTable&\Cake\ORM\Association\HasMany $OrderItems
  * @method \App\Model\Entity\User newEmptyEntity()
  * @method \App\Model\Entity\User newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\User[] newEntities(array $data, array $options = [])
@@ -43,12 +46,8 @@ class UsersTable extends Table
         $this->addBehavior('Muffin/Trash.Trash');
 
         $this->hasMany('Products');
-        $this->hasMany('CartItems', [
-            'foreignKey' => 'buyer_id',
-        ]);
-        $this->hasMany('Orders', [
-            'foreignKey' => 'buyer_id',
-        ]);
+        $this->hasMany('CartItems', ['foreignKey' => 'buyer_id']);
+        $this->hasMany('Orders', ['foreignKey' => 'buyer_id']);
     }
 
     /**

@@ -13,22 +13,22 @@ use Authorization\IdentityInterface;
 class CartItemPolicy
 {
     /**
-     * Check if $user can index cart items
+     * Check if $user can index CartItem
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
-     * @param \App\Model\Entity\CartItem|null $cartItem The cart item.
+     * @param \App\Model\Entity\CartItem $cartItem The cart item entity.
      * @return bool
      */
-    public function canIndex(IdentityInterface $user, ?CartItem $cartItem = null)
+    public function canIndex(IdentityInterface $user, ?CartItem $cartItem)
     {
         return $this->isBuyer($user);
     }
 
     /**
-     * Check if $user can add cart item
+     * Check if $user can add CartItem
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
-     * @param \App\Model\Entity\CartItem $cartItem The cart item.
+     * @param \App\Model\Entity\CartItem $cartItem The cart item entity.
      * @return bool
      */
     public function canAdd(IdentityInterface $user, CartItem $cartItem)
@@ -37,31 +37,31 @@ class CartItemPolicy
     }
 
     /**
-     * Check if $user can update cart item
+     * Check if $user can update CartItem
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
-     * @param \App\Model\Entity\CartItem $cartItem The cart item.
+     * @param \App\Model\Entity\CartItem $cartItem The cart item entity.
      * @return bool
      */
     public function canUpdate(IdentityInterface $user, CartItem $cartItem)
     {
-        return $this->isBuyer($user) && $this->isOwnCartItem($user, $cartItem);
+        return $this->isBuyerCartItem($user, $cartItem);
     }
 
     /**
-     * Check if $user can delete cart item
+     * Check if $user can delete CartItem
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
-     * @param \App\Model\Entity\CartItem $cartItem The cart item.
+     * @param \App\Model\Entity\CartItem $cartItem The cart item entity.
      * @return bool
      */
     public function canDelete(IdentityInterface $user, CartItem $cartItem)
     {
-        return $this->isBuyer($user) && $this->isOwnCartItem($user, $cartItem);
+        return $this->isBuyerCartItem($user, $cartItem);
     }
 
     /**
-     * Check if the user is a buyer
+     * Check if the user is an buyer
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
@@ -72,14 +72,14 @@ class CartItemPolicy
     }
 
     /**
-     * Check if the cart item belongs to the user
+     * Check if the cart item belongs to the buyer
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
-     * @param \App\Model\Entity\CartItem $cartItem The cart item.
+     * @param \App\Model\Entity\CartItem $cartItem The cart item entity.
      * @return bool
      */
-    private function isOwnCartItem(IdentityInterface $user, CartItem $cartItem)
+    private function isBuyerCartItem(IdentityInterface $user, CartItem $cartItem)
     {
-        return $cartItem->buyer_id === $user->id;
+        return $this->isBuyer($user) && ($cartItem->buyer_id === $user->id);
     }
 }

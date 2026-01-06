@@ -5,7 +5,29 @@
  */
 ?>
 <div class="products index content">
-    <h3><?= __('Products') ?></h3>
+    <div style="display:flex; align-items:center;">
+        <h3 style="margin-right:auto;">
+            <?= __('Products') ?>
+        </h3>
+
+        <div style="display:flex; gap:10px;">
+            <?= $this->Html->link(
+                __('Users'),
+                ['controller' => 'Users', 'action' => 'index'],
+                ['class' => 'button']
+            ) ?>
+            <?= $this->Html->link(
+                __('Categories'),
+                ['controller' => 'Categories', 'action' => 'index'],
+                ['class' => 'button']
+            ) ?>
+            <?= $this->Html->link(
+                __('Orders'),
+                ['controller' => 'Orders', 'action' => 'index'],
+                ['class' => 'button']
+            ) ?>
+        </div>
+    </div>
     <div class="table-responsive">
         <table>
             <thead>
@@ -26,8 +48,8 @@
                 <?php foreach ($products as $product): ?>
                     <tr>
                         <td><?= $this->Number->format($product->id) ?></td>
-                        <td><?= $product->has('category') ? $product->category->name : '' ?></td>
-                        <td><?= $product->has('user') ? $product->user->name : '' ?></td>
+                        <td><?= $product->category->name ?></td>
+                        <td><?= $product->user->name ?></td>
                         <td><?= h($product->name) ?></td>
                         <td><?= h($product->slug) ?></td>
                         <td><?= $this->Number->format($product->stock) ?></td>

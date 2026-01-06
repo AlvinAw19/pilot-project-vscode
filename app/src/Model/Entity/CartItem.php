@@ -14,6 +14,7 @@ use Cake\ORM\Entity;
  * @property int $quantity
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\FrozenTime|null $deleted
  *
  * @property \App\Model\Entity\User $user
  * @property \App\Model\Entity\Product $product
@@ -35,6 +36,7 @@ class CartItem extends Entity
         'quantity' => true,
         'created' => true,
         'modified' => true,
+        'deleted' => true,
         'user' => true,
         'product' => true,
     ];

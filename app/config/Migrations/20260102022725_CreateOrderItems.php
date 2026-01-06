@@ -54,11 +54,6 @@ class CreateOrderItems extends AbstractMigration
             'default' => null,
             'null' => false,
         ]);
-        $table->addIndex(['order_id']);
-        $table->addIndex(['product_id']);
-        $table->addIndex(['delivery_status']);
-        $table->addForeignKey('order_id', 'orders', 'id', ['delete' => 'CASCADE', 'update' => 'CASCADE']);
-        $table->addForeignKey('product_id', 'products', 'id', ['delete' => 'RESTRICT', 'update' => 'CASCADE']);
         $table->create();
     }
 }

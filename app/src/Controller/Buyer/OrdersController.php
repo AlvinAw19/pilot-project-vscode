@@ -4,14 +4,16 @@ declare(strict_types=1);
 namespace App\Controller\Buyer;
 
 use App\Controller\AppController;
-use Cake\ORM\TableRegistry;
+use App\Mailer\OrderMailer;
 
 /**
  * Orders Controller
  *
  * @property \App\Model\Table\OrdersTable $Orders
+ * @property \App\Model\Table\OrderItemsTable $OrderItems
+ * @property \App\Model\Table\PaymentsTable $Payments
+ * @property \App\Model\Table\CartItemsTable $CartItems
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
- * @property \App\Controller\Component\OrderMailerComponent $OrderMailer
  * @method \App\Model\Entity\Order[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class OrdersController extends AppController
@@ -24,110 +26,82 @@ class OrdersController extends AppController
     public function initialize(): void
     {
         parent::initialize();
-        $this->loadModel('Orders');
         $this->loadModel('CartItems');
         $this->loadModel('OrderItems');
         $this->loadModel('Payments');
-        $this->loadComponent('OrderMailer');
     }
 
     /**
-     * Index method - Display buyer's order history
+     * Index method
      *
      * @return \Cake\Http\Response|null|void Renders view
      */
     public function index()
     {
-        /** @var \App\Model\Entity\Order $order */
         $order = $this->Orders->newEmptyEntity();
-        $this->Authorization->authorize($order, 'index');
+        $this->Authorization->authorize($order);
 
-        $buyerId = $this->request->getAttribute('identity')->id;
+        $query = $this->Orders->find()
+            ->where(['buyer_id' => $this->request->getAttribute('identity')->id])
+            ->contain(['OrderItems', 'Payments']);
 
-        $orders = $this->Orders
-            ->find()
-            ->where(['Orders.buyer_id' => $buyerId])
-            ->contain(['OrderItems', 'Payments'])
-            ->order(['Orders.created' => 'DESC'])
-            ->all();
+        $orders = $this->paginate($query);
 
         $this->set(compact('orders'));
     }
 
     /**
-     * View method - Display order details
+     * View method
      *
-     * @param int|null $id Order id.
+     * @param string|null $id Order id.
      * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function view($id = null)
     {
         /** @var \App\Model\Entity\Order $order */
         $order = $this->Orders->get($id, [
-            'contain' => ['Buyers', 'OrderItems' => ['Products'], 'Payments'],
+            'contain' => ['OrderItems' => ['Products' => ['Users']], 'Payments'],
         ]);
-
-        $this->Authorization->authorize($order, 'view');
+        $this->Authorization->authorize($order);
 
         $this->set(compact('order'));
     }
 
     /**
-     * Checkout method - Display checkout form or process order
+     * Checkout method
      *
-     * @return \Cake\Http\Response|null Redirects on successful checkout.
+     * @return \Cake\Http\Response|null|void Renders view
      */
     public function checkout()
     {
-        /** @var \App\Model\Entity\Order $order */
         $order = $this->Orders->newEmptyEntity();
-        $this->Authorization->authorize($order, 'checkout');
-
+        $this->Authorization->authorize($order);
         $buyerId = $this->request->getAttribute('identity')->id;
 
-        // Get cart items
-        $cartItems = $this->CartItems
-            ->find()
-            ->where(['CartItems.buyer_id' => $buyerId])
+        // Get cart items for the current buyer
+        $cartItems = $this->CartItems->find()
+            ->where(['buyer_id' => $buyerId])
             ->contain(['Products'])
             ->all();
 
-        if ($cartItems->count() === 0) {
-            $this->Flash->error(__('Your cart is empty. Add products before checkout.'));
-            return $this->redirect(['controller' => 'Cart', 'action' => 'index']);
+        if ($cartItems->isEmpty()) {
+            $this->Flash->error(__('Your cart is empty.'));
+
+            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
         }
 
-        // Validate stock availability for all items
-        foreach ($cartItems as $cartItem) {
-            if ($cartItem->quantity > $cartItem->product->stock) {
-                $this->Flash->error(__(
-                    'Insufficient stock for {0}. Only {1} available.',
-                    $cartItem->product->name,
-                    $cartItem->product->stock
-                ));
-                return $this->redirect(['controller' => 'Cart', 'action' => 'index']);
-            }
-        }
-
-        // Calculate total
+        // Calculate total amount
         $totalAmount = 0;
-        foreach ($cartItems as $cartItem) {
-            $totalAmount += $cartItem->product->price * $cartItem->quantity;
+        foreach ($cartItems as $item) {
+            $totalAmount += $item->product->price * $item->quantity;
         }
 
-        // Handle form submission
         if ($this->request->is('post')) {
-            $paymentType = $this->request->getData('payment_type');
+            $data = $this->request->getData();
 
-            if (empty($paymentType)) {
-                $this->Flash->error(__('Please select a payment method.'));
-                $this->set(compact('cartItems', 'totalAmount'));
-                return;
-            }
-
-            // Use transaction to ensure data integrity
-            $connection = $this->Orders->getConnection();
-            $connection->begin();
+            // Start transaction
+            $this->Orders->getConnection()->begin();
 
             try {
                 // Create order
@@ -136,11 +110,9 @@ class OrdersController extends AppController
                     'total_amount' => $totalAmount,
                 ]);
 
-                if (!$this->Orders->save($order)) {
-                    throw new \Exception('Failed to create order');
-                }
+                $order = $this->Orders->saveOrFail($order);
 
-                // Create order items from cart items
+                // Create order items
                 $orderItems = [];
                 foreach ($cartItems as $cartItem) {
                     $orderItems[] = $this->OrderItems->newEntity([
@@ -149,63 +121,56 @@ class OrdersController extends AppController
                         'price' => $cartItem->product->price,
                         'quantity' => $cartItem->quantity,
                         'amount' => $cartItem->product->price * $cartItem->quantity,
-                        'delivery_status' => 'pending',
                     ]);
-                }
 
-                if (!$this->OrderItems->saveMany($orderItems)) {
-                    throw new \Exception('Failed to create order items');
+                    // Deduct stock for each product
+                    $product = $cartItem->product;
+                    $product->stock = $product->stock - $cartItem->quantity;
+                    $this->OrderItems->Products->saveOrFail($product);
                 }
+                $this->OrderItems->saveManyOrFail($orderItems);
 
-                // Create payment record with selected payment type
+                // Create payment
                 $payment = $this->Payments->newEntity([
                     'order_id' => $order->id,
-                    'payment_type' => $paymentType,
+                    'payment_type' => $data['payment_type'],
                 ]);
+                $this->Payments->saveOrFail($payment);
 
-                if (!$this->Payments->save($payment)) {
-                    throw new \Exception('Failed to create payment record');
-                }
+                // Clear cart
+                $this->CartItems->deleteManyOrFail($cartItems);
 
-                // Update product stock
-                $ProductsTable = TableRegistry::getTableLocator()->get('Products');
-                foreach ($cartItems as $cartItem) {
-                    $product = $ProductsTable->get($cartItem->product_id);
-                    $product->stock -= $cartItem->quantity;
-                    if (!$ProductsTable->save($product)) {
-                        throw new \Exception('Failed to update product stock');
-                    }
-                }
+                // Commit transaction
+                $this->Orders->getConnection()->commit();
 
-                // Clear cart only after successful order creation
-                if (!$this->CartItems->deleteAll(['buyer_id' => $buyerId])) {
-                    throw new \Exception('Failed to clear cart');
-                }
-
-                $connection->commit();
-
-                // Reload order with all associations for email
+                // Reload order with associations for emails
                 $order = $this->Orders->get($order->id, [
-                    'contain' => ['Buyers', 'OrderItems' => ['Products' => ['Users']], 'Payments'],
+                    'contain' => ['Users'],
                 ]);
 
-                // Send confirmation email to buyer
-                $this->OrderMailer->sendOrderConfirmation($order);
+                // Reload order with associations for emails
+                $order = $this->Orders->get($order->id, [
+                    'contain' => ['Users', 'OrderItems' => ['Products' => ['Users']]],
+                ]);
 
-                // Send notification to sellers
-                $this->OrderMailer->sendSellerNotification($order->order_items, $order);
+                // Send order confirmation to buyer
+                $mailer = new OrderMailer();
+                $mailer->orderConfirmation($order);
 
-                $this->Flash->success(__('Order placed successfully! Order ID: {0}', $order->id));
+                // Send notification to each seller
+                foreach ($order->order_items as $item) {
+                    $mailer->sellerNotification($item);
+                }
+
+                $this->Flash->success(__('Order completed successfully.'));
+
                 return $this->redirect(['action' => 'view', $order->id]);
-
             } catch (\Exception $e) {
-                $connection->rollback();
-                $this->Flash->error(__('Checkout failed: {0}', $e->getMessage()));
-                return $this->redirect(['controller' => 'Cart', 'action' => 'index']);
+                $this->Orders->getConnection()->rollback();
+                $this->Flash->error(__('Order could not be completed. Please try again.'));
             }
         }
 
-        // Display checkout form
         $this->set(compact('cartItems', 'totalAmount'));
     }
 }

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Migrations\AbstractMigration;
 
-class CreatePayments extends AbstractMigration
+class CreateOrders extends AbstractMigration
 {
     /**
      * Change Method.
@@ -14,14 +14,15 @@ class CreatePayments extends AbstractMigration
      */
     public function change(): void
     {
-        $table = $this->table('payments');
-        $table->addColumn('order_id', 'integer', [
+        $table = $this->table('orders');
+        $table->addColumn('buyer_id', 'integer', [
             'default' => null,
             'null' => false,
         ]);
-        $table->addColumn('payment_type', 'string', [
-            'default' => null,
-            'limit' => 255,
+        $table->addColumn('total_amount', 'decimal', [
+            'default' => 0.00,
+            'precision' => 10,
+            'scale' => 2,
             'null' => false,
         ]);
         $table->addColumn('created', 'datetime', [
@@ -32,8 +33,6 @@ class CreatePayments extends AbstractMigration
             'default' => null,
             'null' => false,
         ]);
-        $table->addIndex(['order_id']);
-        $table->addForeignKey('order_id', 'orders', 'id', ['delete' => 'CASCADE', 'update' => 'CASCADE']);
-        $table->create();
+       $table->create();
     }
 }
