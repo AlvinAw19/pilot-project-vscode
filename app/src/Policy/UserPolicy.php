@@ -67,6 +67,17 @@ class UserPolicy
     }
 
     /**
+     * Check if $user can view admin logs
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    public function canViewLogs(IdentityInterface $user)
+    {
+        return $this->isAdmin($user);
+    }
+
+    /**
      * Check if the user is an admin
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
