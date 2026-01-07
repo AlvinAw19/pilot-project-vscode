@@ -2,6 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\Product $product
+ * @property \App\View\Helper\ImageHelper $Image
  */
 ?>
 <div class="row">
@@ -34,8 +35,9 @@
                 <tr>
                     <th><?= __('Image') ?></th>
                     <td>
-                        <?= $this->Html->image(
-                            $product->image_link ?: 'https://img.freepik.com/premium-vector/file-folder-mascot-character-design-vector_166742-4413.jpg?semt=ais_hybrid&w=740&q=80',
+                        <?= $this->Image->productImageHtml(
+                            $product->image_link,
+                            h($product->name),
                             ['width' => 200]
                         ) ?>
                     </td>

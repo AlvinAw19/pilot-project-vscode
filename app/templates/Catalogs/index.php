@@ -6,6 +6,7 @@
  * @var string|null $searchTerm
  * @var int|null $categoryId
  * @var \App\Model\Entity\Category|null $selectedCategory
+ * @property \App\View\Helper\ImageHelper $Image
  */
 ?>
 <div class="catalogs catalog content">
@@ -99,9 +100,10 @@
                 <?php foreach ($products as $product): ?>
                     <tr>
                         <td>
-                            <?= $this->Html->image(
-                                $product->image_link ?: 'https://img.freepik.com/premium-vector/file-folder-mascot-character-design-vector_166742-4413.jpg?semt=ais_hybrid&w=740&q=80',
-                                ['alt' => h($product->name), 'width' => 120]
+                            <?= $this->Image->productImageHtml(
+                                $product->image_link,
+                                h($product->name),
+                                ['width' => 120]
                             ) ?>
                         </td>
                         <td><?= $this->Html->link(h($product->name), ['action' => 'view', $product->slug]) ?></td>
