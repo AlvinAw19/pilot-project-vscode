@@ -40,13 +40,12 @@
                 </tr>
             </table>
         </div>
-
         <?php if (!empty($category->products)): ?>
-        <div class="related">
-            <h4><?= __('Related Products') ?></h4>
-            <div class="table-responsive">
-                <table>
-                    <thead>
+            <div class="related">
+                <h4><?= __('Related Products') ?></h4>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
                         <tr>
                             <th><?= __('Id') ?></th>
                             <th><?= __('Name') ?></th>
@@ -56,26 +55,25 @@
                             <th><?= __('Created') ?></th>
                             <th class="actions"><?= __('Actions') ?></th>
                         </tr>
-                    </thead>
-                    <tbody>
+                        </thead>
+                        <tbody>
                         <?php foreach ($category->products as $product): ?>
-                        <tr>
-                            <td><?= h($product->id) ?></td>
-                            <td><?= h($product->name) ?></td>
-                            <td><?= h($product->seller_id) ?></td>
-                            <td><?= h($product->stock) ?></td>
-                            <td>$<?= $this->Number->format($product->price, ['places' => 2]) ?></td>
-                            <td><?= h($product->created) ?></td>
-                            <td class="actions">
-                                <?= $this->Html->link(__('View'), ['controller' => 'Products', 'action' => 'view', $product->slug]) ?>
-                                <?= $this->Html->link(__('Edit'), ['controller' => 'Products', 'action' => 'edit', $product->slug]) ?>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td><?= h($product->id) ?></td>
+                                <td><?= h($product->name) ?></td>
+                                <td><?= h($product->seller_id) ?></td>
+                                <td><?= h($product->stock) ?></td>
+                                <td>$<?= $this->Number->format($product->price, ['places' => 2]) ?></td>
+                                <td><?= h($product->created) ?></td>
+                                <td class="action">
+                                    <?= $this->Html->link(__('View'), ['controller' => 'Products', 'action' => 'view', $product->slug]) ?>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
         <?php endif; ?>
     </div>
 </div>

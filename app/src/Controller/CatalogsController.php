@@ -18,6 +18,21 @@ use Cake\Event\EventInterface;
 class CatalogsController extends AppController
 {
     /**
+     * Initialize method
+     *
+     * @return void
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->loadModel('Products');
+        $this->loadModel('Categories');
+
+        // Skip authorization for all actions in this public controller
+        $this->Authorization->skipAuthorization();
+    }
+
+    /**
      * beforeFilter callback.
      *
      * Allows all actions to be accessed without authentication
@@ -33,21 +48,6 @@ class CatalogsController extends AppController
     }
 
     /**
-     * Initialize method
-     *
-     * @return void
-     */
-    public function initialize(): void
-    {
-        parent::initialize();
-        $this->loadModel('Products');
-        $this->loadModel('Categories');
-
-        // Skip authorization for all actions in this controller
-        $this->Authorization->skipAuthorization();
-    }
-
-    /**
      * Display all available products with pagination
      *
      * Shows only products where deleted IS NULL and stock > 0,
@@ -57,31 +57,31 @@ class CatalogsController extends AppController
      */
     public function index()
     {
-        // Get all products
-        $query = $this->Products->find('search', [
-            'search' => $this->request->getQueryParams(),
-        ])
-            ->where([
-                'Products.deleted IS' => null,
-                'Products.stock >' => 0,
-            ])
+        // Get query parameters
+        $searchTerm = $this->request->getQuery('search');
+        $categoryId = $this->request->getQuery('category_id');
+
+        // Get all products using custom finder
+        $query = $this->Products
+            ->find('search', ['search' => $this->request->getQueryParams()])
+            ->find('activeProduct')
             ->contain(['Categories'])
             ->order(['Products.created' => 'DESC']);
 
         $products = $this->paginate($query);
 
-        // Get all categories
-        $categories = $this->Categories->find()
-            ->where(['Categories.deleted IS' => null])
-            ->order(['Categories.name' => 'ASC'])
+        // Get all categories using custom finder
+        $categories = $this->Categories
+            ->find('activeCategory')
             ->all();
 
-        // Search term if any (use for filtering)
-        $searchTerm = $this->request->getQuery('q');
-        // Category ID if any (use for filtering)
-        $categoryId = $this->request->getQuery('category_id');
+        // Get selected category if filtering
+        $selectedCategory = null;
+        if ($categoryId) {
+            $selectedCategory = $categories->firstMatch(['id' => $categoryId]);
+        }
 
-        $this->set(compact('products', 'categories', 'searchTerm', 'categoryId'));
+        $this->set(compact('products', 'categories', 'searchTerm', 'categoryId', 'selectedCategory'));
     }
 
     /**
@@ -94,8 +94,8 @@ class CatalogsController extends AppController
     public function view($slug)
     {
         $product = $this->Products
-            ->find()
-            ->where(['Products.slug' => $slug, 'Products.deleted IS' => null])
+            ->find('activeProduct')
+            ->where(['Products.slug' => $slug])
             ->contain(['Categories', 'Users'])
             ->firstOrFail();
 

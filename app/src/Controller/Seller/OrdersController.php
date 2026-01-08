@@ -34,8 +34,7 @@ class OrdersController extends AppController
     public function index()
     {
         $orderItem = $this->OrderItems->newEmptyEntity();
-        $this->Authorization->authorize($orderItem, 'index');
-
+        $this->Authorization->authorize($orderItem);
         $sellerId = $this->request->getAttribute('identity')->id;
 
         $query = $this->OrderItems->find()
@@ -77,8 +76,7 @@ class OrdersController extends AppController
         $updatedCount = 0;
 
         foreach ($orderItems as $orderItem) {
-            $this->Authorization->authorize($orderItem, 'updateStatus');
-
+            $this->Authorization->authorize($orderItem);
             $orderItem->delivery_status = $newStatus;
             if ($this->OrderItems->save($orderItem)) {
                 $updatedCount++;

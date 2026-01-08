@@ -20,7 +20,7 @@
             <table>
                 <tr>
                     <th><?= __('Category') ?></th>
-                    <td><?= $product->has('category')? $product->category->name : '' ?></td>
+                    <td><?= h($product->category->name) ?></td>
                 </tr>
                 <tr>
                     <th><?= __('Name') ?></th>
@@ -32,7 +32,12 @@
                 </tr>
                 <tr>
                     <th><?= __('Image') ?></th>
-                    <td><?= $this->Html->image($product->image_link, ['width' => 200]) ?></td>
+                    <td>
+                        <?= $this->Html->image(
+                            $product->image_link ?: 'https://img.freepik.com/premium-vector/file-folder-mascot-character-design-vector_166742-4413.jpg?semt=ais_hybrid&w=740&q=80',
+                            ['width' => 200]
+                        ) ?>
+                    </td>
                 </tr>
                 <tr>
                     <th><?= __('Id') ?></th>

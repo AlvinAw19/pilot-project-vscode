@@ -69,7 +69,7 @@
     <div>
         <?= $this->Html->link(
             __('Back to Cart'),
-            ['controller' => 'Cart', 'action' => 'index'],
+            ['controller' => 'CartItems', 'action' => 'index'],
             ['class' => 'button']
         ) ?>
     </div>

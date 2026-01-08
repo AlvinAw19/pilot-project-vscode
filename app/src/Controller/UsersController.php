@@ -68,14 +68,21 @@ class UsersController extends AppController
         // regardless of POST or GET, redirect if user is logged in
         if ($result && $result->isValid()) {
             $identity = $this->request->getAttribute('identity');
-            if ($identity && ($identity->get('role') === User::ROLE_ADMIN)) {
-                return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
-            } elseif ($identity && ($identity->get('role') === User::ROLE_SELLER)) {
-                return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
-            } elseif ($identity && ($identity->get('role') === User::ROLE_BUYER)) {
-                return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+
+            if ($identity) {
+                switch ($identity->get('role')) {
+                    case User::ROLE_ADMIN:
+                        return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
+
+                    case User::ROLE_SELLER:
+                        return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
+
+                    case User::ROLE_BUYER:
+                        return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+                }
             }
 
+            // Guest fallback
             return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
         }
         // display error if user submitted and authentication failed

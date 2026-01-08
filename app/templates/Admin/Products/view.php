@@ -2,6 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\Product $product
+ * @property \App\View\Helper\ImageHelper $Image
  */
 ?>
 <div class="row">
@@ -17,11 +18,11 @@
             <table>
                 <tr>
                     <th><?= __('Category') ?></th>
-                    <td><?= $product->has('category') ? $this->Html->link($product->category->name, ['controller' => 'Categories', 'action' => 'view', $product->category->slug]) : '' ?></td>
+                    <td><?= $this->Html->link($product->category->name, ['controller' => 'Categories', 'action' => 'view', $product->category->slug]) ?></td>
                 </tr>
                 <tr>
                     <th><?= __('User') ?></th>
-                    <td><?= $product->has('user') ? $this->Html->link($product->user->name, ['controller' => 'Users', 'action' => 'view', $product->user->id]) : '' ?></td>
+                    <td><?= $this->Html->link($product->user->name, ['controller' => 'Users', 'action' => 'view', $product->user->id]) ?></td>
                 </tr>
                 <tr>
                     <th><?= __('Name') ?></th>
@@ -33,7 +34,9 @@
                 </tr>
                 <tr>
                     <th><?= __('Image') ?></th>
-                    <td><?= $this->Html->image($product->image_link, ['width' => 200]) ?></td>
+                    <td>
+                        <?= $this->Image->productImageHtml($product->image_link, h($product->name), ['width' => 200]) ?>
+                    </td>
                 </tr>
                 <tr>
                     <th><?= __('Id') ?></th>

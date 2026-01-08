@@ -13,6 +13,19 @@ use Authorization\IdentityInterface;
 class OrderPolicy
 {
     /**
+     * Check if $user can index products
+     * Admin can view all, seller can view own (filtered in controller)
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @param \App\Model\Entity\Order $order The order.
+     * @return bool
+     */
+    public function canIndex(IdentityInterface $user, ?Order $order = null)
+    {
+        return $this->isAdmin($user) || $this->isBuyer($user);
+    }
+
+    /**
      * Check if $user can view Order
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
@@ -22,18 +35,6 @@ class OrderPolicy
     public function canView(IdentityInterface $user, Order $order)
     {
         return $this->isAdmin($user) || $this->isBuyerOrder($user, $order);
-    }
-
-    /**
-     * Check if $user can index orders
-     *
-     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
-     * @param \App\Model\Entity\Order|null $order The order.
-     * @return bool
-     */
-    public function canIndex(IdentityInterface $user, ?Order $order = null)
-    {
-        return $this->isAdmin($user) || $this->isBuyer($user);
     }
 
     /**

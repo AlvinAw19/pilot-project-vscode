@@ -38,11 +38,12 @@ class OrdersController extends AppController
     public function index()
     {
         $order = $this->Orders->newEmptyEntity();
-        $this->Authorization->authorize($order, 'index');
+        $this->Authorization->authorize($order);
 
         $query = $this->Orders->find()
             ->where(['buyer_id' => $this->request->getAttribute('identity')->id])
-            ->contain(['OrderItems', 'Payments']);
+            ->contain(['OrderItems', 'Payments'])
+            ->order(['Orders.created' => 'DESC']);
 
         $orders = $this->paginate($query);
 
@@ -62,7 +63,6 @@ class OrdersController extends AppController
         $order = $this->Orders->get($id, [
             'contain' => ['OrderItems' => ['Products' => ['Users']], 'Payments'],
         ]);
-
         $this->Authorization->authorize($order);
 
         $this->set(compact('order'));
@@ -76,8 +76,7 @@ class OrdersController extends AppController
     public function checkout()
     {
         $order = $this->Orders->newEmptyEntity();
-        $this->Authorization->authorize($order, 'checkout');
-
+        $this->Authorization->authorize($order);
         $buyerId = $this->request->getAttribute('identity')->id;
 
         // Get cart items for the current buyer
@@ -92,10 +91,36 @@ class OrdersController extends AppController
             return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
         }
 
-        // Calculate total amount
+        // Calculate total amount and validate stock availability
         $totalAmount = 0;
+        $unavailableItems = [];
+
         foreach ($cartItems as $item) {
-            $totalAmount += $item->product->price * $item->quantity;
+            // Check if product still exists and has stock
+            if (!$item->product || $item->product->stock < $item->quantity) {
+                $unavailableItems[] = $item->product ? $item->product->name : __('Unknown product');
+            } else {
+                $totalAmount += $item->product->price * $item->quantity;
+            }
+        }
+
+        // Remove unavailable items from cart
+        if (!empty($unavailableItems)) {
+            $itemsToRemove = [];
+            foreach ($cartItems as $item) {
+                $productName = $item->product ? $item->product->name : __('Unknown product');
+                if (in_array($productName, $unavailableItems)) {
+                    $itemsToRemove[] = $item;
+                }
+            }
+            $this->CartItems->deleteMany($itemsToRemove);
+
+            $this->Flash->error(__(
+                'Some items in your cart are no longer available: {0}',
+                implode(', ', $unavailableItems)
+            ));
+
+            return $this->redirect(['controller' => 'CartItems', 'action' => 'index']);
         }
 
         if ($this->request->is('post')) {
@@ -123,6 +148,10 @@ class OrdersController extends AppController
                         'quantity' => $cartItem->quantity,
                         'amount' => $cartItem->product->price * $cartItem->quantity,
                     ]);
+
+                    $product = $cartItem->product;
+                    $product->stock = $product->stock - $cartItem->quantity;
+                    $this->OrderItems->Products->saveOrFail($product);
                 }
                 $this->OrderItems->saveManyOrFail($orderItems);
 

@@ -6,37 +6,40 @@
  * @var string|null $searchTerm
  * @var int|null $categoryId
  * @var \App\Model\Entity\Category|null $selectedCategory
+ * @property \App\View\Helper\ImageHelper $Image
  */
 ?>
 <div class="catalogs catalog content">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3><?= __('Product Catalog') ?></h3>
-        <?php
-        $identity = $this->request->getAttribute('identity');
-        if ($identity && $identity->role === 'buyer'):
-        ?>
+    <div style="display:flex; align-items:center;">
+        <h3 style="margin-right:auto;">
+            <?= __('Product Catalog') ?>
+        </h3>
+
+        <div style="display:flex; gap:10px;">
+            <?= $this->Html->link(
+                __('My Order'),
+                ['prefix' => 'Buyer', 'controller' => 'Orders', 'action' => 'index'],
+                ['class' => 'button order-button']
+            ) ?>
             <?= $this->Html->link(
                 __('My Cart'),
-                ['controller' => 'Cart', 'action' => 'index', 'prefix' => 'Buyer'],
-                ['class' => 'button', 'style' => 'background-color: #dc3545;']
+                ['prefix' => 'Buyer', 'controller' => 'CartItems', 'action' => 'index'],
+                ['class' => 'button cart-button']
             ) ?>
-        <?php else: ?>
-            <?= $this->Html->link(
-                __('Login to View Cart'),
-                ['controller' => 'Users', 'action' => 'login', 'prefix' => false],
-                ['class' => 'button', 'style' => 'background-color: #dc3545;']
-            ) ?>
-        <?php endif; ?>
+        </div>
     </div>
 
     <!-- Search Form -->
     <div class="search">
-        <?= $this->Form->create(null, ['type' => 'get', 'url' => ['action' => 'index']]) ?>
+        <?= $this->Form->create(null, [
+            'type' => 'get',
+            'url' => ['action' => 'index'],
+            'valueSources' => ['query', 'context']
+        ]) ?>
         <fieldset>
-            <?= $this->Form->control('q', [
+            <?= $this->Form->control('search', [
                 'label' => __('Search'),
                 'placeholder' => __('Search products by name or description...'),
-                'value' => $searchTerm ?? ''
             ]) ?>
             <?= $this->Form->button(__('Search'), ['type' => 'submit']) ?>
             <?= $this->Html->link(__('Clear'), ['action' => 'index'], ['class' => 'button']) ?>
@@ -49,24 +52,24 @@
         <h4><?= __('Categories') ?></h4>
 
         <?= $this->Html->link(__('All'), ['action' => 'index'], [
-            'class' => 'button' . (!isset($categoryId) ? ' selected' : '')
+            'class' => 'button' . (!$categoryId ? ' selected' : '')
         ]) ?>
 
         <?php
         $others = null;
+        foreach ($categories as $category) {
+            if ($category->name === 'Others') {
+                $others = $category;
+            }
+        }
         ?>
 
         <?php foreach ($categories as $category): ?>
-            <?php
-            if ($category->name === 'Others') {
-                $others = $category;
-                continue;
-            }
-            ?>
+            <?php if ($category->name === 'Others') continue; ?>
             <?= $this->Html->link(
                 h($category->name),
                 ['action' => 'index', '?' => ['category_id' => $category->id]],
-                ['class' => 'button' . (isset($categoryId) && $categoryId == $category->id ? ' selected' : '')]
+                ['class' => 'button' . ($categoryId == $category->id ? ' selected' : '')]
             ) ?>
         <?php endforeach; ?>
 
@@ -74,16 +77,16 @@
             <?= $this->Html->link(
                 h($others->name),
                 ['action' => 'index', '?' => ['category_id' => $others->id]],
-                ['class' => 'button' . (isset($categoryId) && $categoryId == $others->id ? ' selected' : '')]
+                ['class' => 'button' . ($categoryId == $others->id ? ' selected' : '')]
             ) ?>
         <?php endif; ?>
     </div>
 
-    <?php if (isset($searchTerm) && !empty($searchTerm)): ?>
+    <?php if (!empty($searchTerm)): ?>
         <p class="search-info"><?= __('Search: "{0}"', h($searchTerm)) ?></p>
     <?php endif; ?>
 
-    <?php if (isset($selectedCategory)): ?>
+    <?php if ($selectedCategory): ?>
         <p class="category-info"><?= __('Category: {0}', h($selectedCategory->name)) ?></p>
     <?php endif; ?>
 
@@ -98,24 +101,24 @@
                     <th><?= $this->Paginator->sort('category_id', __('Category')) ?></th>
                     <th><?= $this->Paginator->sort('price', __('Price')) ?></th>
                     <th><?= $this->Paginator->sort('stock', __('Stock')) ?></th>
-                    <th class="actions"><?= __('Actions') ?></th>
+                    <th class="action"><?= __('Action') ?></th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($products as $product): ?>
                     <tr>
                         <td>
-                            <?php if (!empty($product->image_link)): ?>
-                                <?= $this->Html->image($product->image_link, ['alt' => h($product->name), 'width' => 120]) ?>
-                            <?php else: ?>
-                                <em><?= __('No image') ?></em>
-                            <?php endif; ?>
+                            <?= $this->Image->productImageHtml(
+                                $product->image_link,
+                                h($product->name),
+                                ['width' => 200]
+                            ) ?>
                         </td>
                         <td><?= $this->Html->link(h($product->name), ['action' => 'view', $product->slug]) ?></td>
-                        <td><?= $product->has('category') ? h($product->category->name) : '' ?></td>
-                        <td>$<?= $this->Number->format($product->price, ['places' => 2]) ?></td>
+                        <td><?= h($product->category->name) ?></td>
+                        <td><?= $this->Number->format($product->price, ['places' => 2]) ?></td>
                         <td><?= $this->Number->format($product->stock) ?></td>
-                        <td class="actions">
+                        <td class="action">
                             <?= $this->Html->link(__('View'), ['action' => 'view', $product->slug]) ?>
                         </td>
                     </tr>

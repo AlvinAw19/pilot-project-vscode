@@ -98,4 +98,18 @@ class CategoriesTable extends Table
             $entity->slug = strtolower(Text::slug($entity->name));
         }
     }
+
+    /**
+     * Custom finder for active categories (not deleted)
+     *
+     * @param \Cake\ORM\Query $query The query object
+     * @param array<string, mixed> $options Options array
+     * @return \Cake\ORM\Query
+     */
+    public function findActiveCategory(\Cake\ORM\Query $query, array $options): \Cake\ORM\Query
+    {
+        return $query
+            ->where([$this->aliasField('deleted') . ' IS' => null])
+            ->order([$this->aliasField('name') => 'ASC']);
+    }
 }

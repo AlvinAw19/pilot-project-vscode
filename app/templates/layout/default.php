@@ -39,26 +39,8 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
             <a href="<?= $this->Url->build('/') ?>"><span>Cake</span>PHP</a>
         </div>
         <div class="top-nav-links">
-            <?php if ($this->request->getAttribute('identity')): ?>
-                <?php $user = $this->request->getAttribute('identity'); ?>
-                <?php if ($user->role === 'buyer'): ?>
-                    <?= $this->Html->link(__('Shop'), ['controller' => 'Catalogs', 'action' => 'index', 'prefix' => false]) ?>
-                    <?= $this->Html->link(__('Cart'), ['controller' => 'Cart', 'action' => 'index', 'prefix' => 'Buyer']) ?>
-                    <?= $this->Html->link(__('Orders'), ['controller' => 'Orders', 'action' => 'index', 'prefix' => 'Buyer']) ?>
-                <?php elseif ($user->role === 'seller'): ?>
-                    <?= $this->Html->link(__('Products'), ['controller' => 'Products', 'action' => 'index', 'prefix' => 'Seller']) ?>
-                    <?= $this->Html->link(__('Order Items'), ['controller' => 'Orders', 'action' => 'index', 'prefix' => 'Seller']) ?>
-                <?php elseif ($user->role === 'admin'): ?>
-                    <?= $this->Html->link(__('Users'), ['controller' => 'Users', 'action' => 'index', 'prefix' => 'Admin']) ?>
-                    <?= $this->Html->link(__('Categories'), ['controller' => 'Categories', 'action' => 'index', 'prefix' => 'Admin']) ?>
-                    <?= $this->Html->link(__('Products'), ['controller' => 'Products', 'action' => 'index', 'prefix' => 'Admin']) ?>
-                    <?= $this->Html->link(__('Orders'), ['controller' => 'Orders', 'action' => 'index', 'prefix' => 'Admin']) ?>
-                <?php endif; ?>
-                <?= $this->Html->link(__('Logout'), ['controller' => 'Users', 'action' => 'logout', 'prefix' => false]) ?>
-            <?php else: ?>
-                <?= $this->Html->link(__('Login'), ['controller' => 'Users', 'action' => 'login', 'prefix' => false]) ?>
-                <?= $this->Html->link(__('Register'), ['controller' => 'Users', 'action' => 'register', 'prefix' => false]) ?>
-            <?php endif; ?>
+            <a target="_blank" rel="noopener" href="https://book.cakephp.org/4/">Documentation</a>
+            <a target="_blank" rel="noopener" href="https://api.cakephp.org/">API</a>
         </div>
     </nav>
     <main class="main">

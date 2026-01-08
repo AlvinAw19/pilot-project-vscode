@@ -144,7 +144,7 @@ class ProductsTable extends Table
     private function searchFilters(): void
     {
         $this->searchManager()
-            ->add('q', 'Search.Like', [
+            ->add('search', 'Search.Like', [
                 'before' => true,
                 'after' => true,
                 'mode' => 'or',
@@ -152,6 +152,22 @@ class ProductsTable extends Table
             ])
             ->add('category_id', 'Search.Value', [
                 'fields' => ['Products.category_id'],
+            ]);
+    }
+
+    /**
+     * Custom finder for active product (not deleted and >0)
+     *
+     * @param \Cake\ORM\Query $query The query object
+     * @param array<string, mixed> $options Options array
+     * @return \Cake\ORM\Query
+     */
+    public function findActiveProduct(\Cake\ORM\Query $query, array $options): \Cake\ORM\Query
+    {
+        return $query
+            ->where([
+                $this->aliasField('deleted') . ' IS' => null,
+                $this->aliasField('stock') . ' >' => 0,
             ]);
     }
 }
