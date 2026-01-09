@@ -14,6 +14,8 @@ use Cake\Validation\Validator;
  *
  * @property \App\Model\Table\CategoriesTable&\Cake\ORM\Association\BelongsTo $Categories
  * @property \App\Model\Table\UsersTable&\Cake\ORM\Association\BelongsTo $Users
+ * @property \App\Model\Table\CartItemsTable&\Cake\ORM\Association\HasMany $CartItems
+ * @property \App\Model\Table\OrderItemsTable&\Cake\ORM\Association\HasMany $OrderItems
  * @method \App\Model\Entity\Product newEmptyEntity()
  * @method \App\Model\Entity\Product newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\Product[] newEntities(array $data, array $options = [])
@@ -60,12 +62,8 @@ class ProductsTable extends Table
             'foreignKey' => 'seller_id',
             'joinType' => 'INNER',
         ]);
-        $this->hasMany('CartItems', [
-            'foreignKey' => 'product_id',
-        ]);
-        $this->hasMany('OrderItems', [
-            'foreignKey' => 'product_id',
-        ]);
+        $this->hasMany('CartItems', ['foreignKey' => 'product_id']);
+        $this->hasMany('OrderItems', ['foreignKey' => 'product_id']);
     }
 
     /**
@@ -146,7 +144,7 @@ class ProductsTable extends Table
     private function searchFilters(): void
     {
         $this->searchManager()
-            ->add('q', 'Search.Like', [
+            ->add('search', 'Search.Like', [
                 'before' => true,
                 'after' => true,
                 'mode' => 'or',
@@ -154,6 +152,22 @@ class ProductsTable extends Table
             ])
             ->add('category_id', 'Search.Value', [
                 'fields' => ['Products.category_id'],
+            ]);
+    }
+
+    /**
+     * Custom finder for active product (not deleted and >0)
+     *
+     * @param \Cake\ORM\Query $query The query object
+     * @param array<string, mixed> $options Options array
+     * @return \Cake\ORM\Query
+     */
+    public function findActiveProduct(\Cake\ORM\Query $query, array $options): \Cake\ORM\Query
+    {
+        return $query
+            ->where([
+                $this->aliasField('deleted') . ' IS' => null,
+                $this->aliasField('stock') . ' >' => 0,
             ]);
     }
 }

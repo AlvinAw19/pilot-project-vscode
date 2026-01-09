@@ -21,11 +21,11 @@ class OrderItemPolicy
      */
     public function canIndex(IdentityInterface $user, ?OrderItem $orderItem = null)
     {
-        return $this->isSeller($user) || $this->isAdmin($user);
+        return $this->isSeller($user);
     }
 
     /**
-     * Check if $user can update order item delivery status
+     * Check if $user can update status of order item
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @param \App\Model\Entity\OrderItem $orderItem The order item.
@@ -33,17 +33,7 @@ class OrderItemPolicy
      */
     public function canUpdateStatus(IdentityInterface $user, OrderItem $orderItem)
     {
-        // Admin can update any order item
-        if ($this->isAdmin($user)) {
-            return true;
-        }
-
-        // Seller can only update order items for their own products
-        if ($this->isSeller($user) && isset($orderItem->product)) {
-            return $orderItem->product->seller_id === $user->id;
-        }
-
-        return false;
+        return $this->isSellerOrderItem($user, $orderItem);
     }
 
     /**
@@ -58,13 +48,14 @@ class OrderItemPolicy
     }
 
     /**
-     * Check if the user is an admin
+     * Check if the order item belongs to the seller's product
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @param \App\Model\Entity\OrderItem $orderItem The order item.
      * @return bool
      */
-    private function isAdmin(IdentityInterface $user)
+    private function isSellerOrderItem(IdentityInterface $user, OrderItem $orderItem)
     {
-        return $user->role === User::ROLE_ADMIN;
+        return $this->isSeller($user) && ($orderItem->product->seller_id === $user->id);
     }
 }

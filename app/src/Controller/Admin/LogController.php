@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Controller\AppController;
-use Authorization\Exception\ForbiddenException;
 
 /**
  * Log Controller
@@ -12,7 +11,8 @@ use Authorization\Exception\ForbiddenException;
  * Admin action log reporting
  *
  * @property \App\Controller\Component\LogComponent $Log
- * @property \App\Model\Table\UsersTable $Users
+ * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  */
 class LogController extends AppController
 {
@@ -26,17 +26,13 @@ class LogController extends AppController
     public function index()
     {
         $identity = $this->Authentication->getIdentity();
-        if (!$identity) {
-            throw new ForbiddenException('Not authenticated');
+        if ($identity === null) {
+            throw new \Authorization\Exception\ForbiddenException();
         }
-        /** @var \App\Model\Entity\User $user */
         $user = $identity->getOriginalData();
         $this->Authorization->authorize($user, 'viewLogs');
 
-        // Get logs from session via LogComponent
         $logs = $this->Log->getLogs();
-
-        // Reverse to show newest first
         $logs = array_reverse($logs);
 
         $this->set(compact('logs'));

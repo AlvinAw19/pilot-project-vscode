@@ -5,8 +5,24 @@
  */
 ?>
 <div class="products index content">
-    <?= $this->Html->link(__('New Product'), ['action' => 'add'], ['class' => 'button float-right']) ?>
-    <h3><?= __('Products') ?></h3>
+    <div style="display:flex; align-items:center;">
+        <h3 style="margin-right:auto;">
+            <?= __('Products') ?>
+        </h3>
+
+        <div style="display:flex; gap:10px;">
+            <?= $this->Html->link(
+                __('My Order'),
+                ['controller' => 'Orders', 'action' => 'index'],
+                ['class' => 'button']
+            ) ?>
+            <?= $this->Html->link(
+                __('New Product'),
+                ['action' => 'add'],
+                ['class' => 'button']
+            ) ?>
+        </div>
+    </div>
     <div class="table-responsive">
         <table>
             <thead>

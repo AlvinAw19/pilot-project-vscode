@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Component;
 
+use App\Model\Entity\User;
 use Cake\Controller\Component;
 
 /**
@@ -26,15 +27,12 @@ class LogComponent extends Component
         $request = $controller->getRequest();
         $identity = $request->getAttribute('identity');
 
-        // Only log if user is authenticated and is an admin
-        if (!$identity || $identity->role !== 'admin') {
+        if (!$identity || $identity->role !== User::ROLE_ADMIN) {
             return;
         }
 
-        // Get current logs from session
         $logs = $request->getSession()->read('AdminLogs') ?? [];
 
-        // Append new log entry
         $logs[] = [
             'admin_user_id' => $identity->id,
             'admin_username' => $identity->name,
@@ -45,7 +43,6 @@ class LogComponent extends Component
             'timestamp' => date('Y-m-d H:i:s'),
         ];
 
-        // Store back to session
         $request->getSession()->write('AdminLogs', $logs);
     }
 

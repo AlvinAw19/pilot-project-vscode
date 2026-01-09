@@ -33,7 +33,7 @@ class ProductPolicy
      */
     public function canEdit(IdentityInterface $user, Product $product)
     {
-        return $this->isSellerProduct($user, $product) || $this->isAdmin($user);
+        return $this->isSellerProduct($user, $product);
     }
 
     /**
@@ -45,7 +45,7 @@ class ProductPolicy
      */
     public function canDelete(IdentityInterface $user, Product $product)
     {
-        return $this->isSellerProduct($user, $product) || $this->isAdmin($user);
+        return $this->isSellerProduct($user, $product);
     }
 
     /**
@@ -57,7 +57,7 @@ class ProductPolicy
      */
     public function canView(IdentityInterface $user, Product $product)
     {
-        return $this->isSellerProduct($user, $product) || $this->isAdmin($user);
+        return $this->isAdmin($user) || $this->isSellerProduct($user, $product);
     }
 
     /**
@@ -85,7 +85,7 @@ class ProductPolicy
     }
 
     /**
-     * Check if the user is an seller
+     * Check if the user is a seller
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
@@ -104,6 +104,6 @@ class ProductPolicy
      */
     private function isSellerProduct(IdentityInterface $user, Product $product)
     {
-        return $product->seller_id === $user->id;
+        return $this->isSeller($user) && ($product->seller_id === $user->id);
     }
 }

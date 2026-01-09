@@ -46,8 +46,7 @@ class OrdersTable extends Table
 
         $this->addBehavior('Timestamp');
 
-        $this->belongsTo('Buyers', [
-            'className' => 'Users',
+        $this->belongsTo('Users', [
             'foreignKey' => 'buyer_id',
             'joinType' => 'INNER',
         ]);
@@ -68,14 +67,8 @@ class OrdersTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->integer('buyer_id')
-            ->notEmptyString('buyer_id');
-
-        $validator
             ->decimal('total_amount')
-            ->requirePresence('total_amount', 'create')
-            ->notEmptyString('total_amount')
-            ->greaterThanOrEqual('total_amount', 0);
+            ->notEmptyString('total_amount');
 
         return $validator;
     }
@@ -89,7 +82,7 @@ class OrdersTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
-        $rules->add($rules->existsIn('buyer_id', 'Buyers'), ['errorField' => 'buyer_id']);
+        $rules->add($rules->existsIn('buyer_id', 'Users'), ['errorField' => 'buyer_id']);
 
         return $rules;
     }

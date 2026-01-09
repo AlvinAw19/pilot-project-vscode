@@ -55,12 +55,8 @@ return function (RouteBuilder $routes): void {
          * its action called 'display', and we pass a param to select the view file
          * to use (in this case, templates/Pages/home.php)...
          */
-        $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
-
-        /*
-         * Buyer route - connects to Catalogs index action
-         */
-        $builder->connect('/buyer', ['controller' => 'Catalogs', 'action' => 'index']);
+        // $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+        $builder->connect('/', ['controller' => 'Catalogs', 'action' => 'index']);
 
         /*
          * ...and connect the rest of 'Pages' controller's URLs.
@@ -94,8 +90,7 @@ return function (RouteBuilder $routes): void {
     });
 
     $routes->prefix('Buyer', function (RouteBuilder $builder): void {
-        $builder->connect('/cart', ['controller' => 'Cart', 'action' => 'index']);
-        $builder->connect('/orders', ['controller' => 'Orders', 'action' => 'index']);
+        $builder->connect('/', ['prefix' => false, 'controller' => 'Catalogs', 'action' => 'index']);
         $builder->fallbacks();
     });
 

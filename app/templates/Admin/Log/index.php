@@ -23,8 +23,8 @@
             <tr>
                 <td><?= $index + 1 ?></td>
                 <td>
-                <?= h($log['admin_username']) ?>
-                <small>(ID: <?= h($log['admin_user_id']) ?>)</small>
+                    <?= h($log['admin_username']) ?>
+                    <small>(ID: <?= h($log['admin_user_id']) ?>)</small>
                 </td>
                 <td>
                     <?php if (!empty($log['prefix'])): ?>
