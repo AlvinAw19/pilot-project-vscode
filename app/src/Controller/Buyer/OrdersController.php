@@ -168,6 +168,37 @@ class OrdersController extends AppController
                 // Commit transaction
                 $this->Orders->getConnection()->commit();
 
+                // Load order with associations for email
+                $order = $this->Orders->get($order->id, [
+                    'contain' => ['OrderItems' => ['Products'], 'Users'],
+                ]);
+
+                // Send confirmation email to buyer
+                try {
+                    (new \App\Mailer\OrderMailer())
+                        ->send('buyerOrderConfirmation', [$order, $order->user]);
+                } catch (\Exception $e) {
+                    // Log error but don't stop the checkout process
+                    \Cake\Log\Log::error('Failed to send buyer confirmation email: ' . $e->getMessage());
+                }
+
+                // Send notification emails to sellers for each order item
+                foreach ($orderItems as $orderItem) {
+                    $orderItemWithData = $this->OrderItems->get($orderItem->id, [
+                        'contain' => ['Products' => ['Users'], 'Orders' => ['Users']],
+                    ]);
+
+                    if (!empty($orderItemWithData->product->user)) {
+                        try {
+                            (new \App\Mailer\OrderMailer())
+                                ->send('sellerOrderNotification', [$orderItemWithData, $orderItemWithData->product->user]);
+                        } catch (\Exception $e) {
+                            // Log error but don't stop the checkout process
+                            \Cake\Log\Log::error('Failed to send seller notification email: ' . $e->getMessage());
+                        }
+                    }
+                }
+
                 $this->Flash->success(__('Order completed successfully.'));
 
                 return $this->redirect(['action' => 'view', $order->id]);
