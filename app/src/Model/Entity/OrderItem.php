@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Model\Entity;
 
 use Cake\ORM\Entity;
+use App\Enum\DeliveryStatus;
 
 /**
  * OrderItem Entity
@@ -23,14 +24,6 @@ use Cake\ORM\Entity;
  */
 class OrderItem extends Entity
 {
-    /**
-     * Delivery status constants
-     */
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_DELIVERING = 'delivering';
-    public const STATUS_DELIVERED = 'delivered';
-    public const STATUS_CANCELED = 'canceled';
-
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *

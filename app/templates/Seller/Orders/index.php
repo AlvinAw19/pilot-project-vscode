@@ -2,6 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var iterable<\App\Model\Entity\OrderItem> $orderItems
+ * @var array $deliveryStatusOptions
  */
 ?>
 <div class="orders index content">
@@ -13,12 +14,7 @@
     <div class="bulk-actions">
         <p>
             <label><?= __('Update selected items to:') ?></label>
-            <?= $this->Form->select('delivery_status', [
-                'pending' => __('Pending'),
-                'delivering' => __('Delivering'),
-                'delivered' => __('Delivered'),
-                'canceled' => __('Canceled'),
-            ], [
+            <?= $this->Form->select('delivery_status', $deliveryStatusOptions, [
                 'empty' => __('   Select Status   '),
                 'required' => true
             ]) ?>
@@ -45,7 +41,7 @@
             <?php foreach ($orderItems as $item): ?>
                 <tr>
                     <td>
-                        <?= $this->Form->checkbox('item_ids[]', [
+                        <?= $this->Form->checkbox('order_item_ids[]', [
                             'value' => $item->id,
                             'class' => 'item-checkbox',
                             'hiddenField' => false

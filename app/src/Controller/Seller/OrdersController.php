@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Seller;
 
 use App\Controller\AppController;
+use App\Enum\DeliveryStatus;
 
 /**
  * Orders Controller
@@ -45,6 +46,7 @@ class OrdersController extends AppController
         $orderItems = $this->paginate($query);
 
         $this->set(compact('orderItems'));
+        $this->set('deliveryStatusOptions', DeliveryStatus::options());
     }
 
     /**
@@ -57,10 +59,10 @@ class OrdersController extends AppController
         $this->request->allowMethod(['post']);
         $this->Authorization->skipAuthorization();
 
-        $itemIds = $this->request->getData('item_ids');
+        $orderItemIds = $this->request->getData('order_item_ids');
         $newStatus = $this->request->getData('delivery_status');
 
-        if (empty($itemIds) || empty($newStatus)) {
+        if (empty($orderItemIds) || empty($newStatus)) {
             $this->Flash->error(__('Please select items and status to update.'));
 
             return $this->redirect(['action' => 'index']);
@@ -69,7 +71,7 @@ class OrdersController extends AppController
         // Get order items
         $orderItems = $this->OrderItems
             ->find()
-            ->where(['OrderItems.id IN' => $itemIds])
+            ->where(['OrderItems.id IN' => $orderItemIds])
             ->contain(['Products'])
             ->all();
 
