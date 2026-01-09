@@ -5,26 +5,26 @@
  */
 ?>
 <div class="products index content">
-    <div style="display:flex; align-items:center;">
-        <h3 style="margin-right:auto;">
-            <?= __('Products') ?>
+    <div style="display:flex; align-items:center; margin-bottom: 1.5rem;">
+        <h3 style="margin:0; margin-right:auto; color: #2c3e50;">
+            <?= __('Products Management') ?>
         </h3>
 
         <div style="display:flex; gap:10px;">
             <?= $this->Html->link(
-                __('Users'),
+                __('👥 Users'),
                 ['controller' => 'Users', 'action' => 'index'],
                 ['class' => 'button']
             ) ?>
             <?= $this->Html->link(
-                __('Categories'),
+                __('📂 Categories'),
                 ['controller' => 'Categories', 'action' => 'index'],
                 ['class' => 'button']
             ) ?>
             <?= $this->Html->link(
-                __('Orders'),
+                __('📦 Orders'),
                 ['controller' => 'Orders', 'action' => 'index'],
-                ['class' => 'button']
+                ['class' => 'button order-button']
             ) ?>
         </div>
     </div>

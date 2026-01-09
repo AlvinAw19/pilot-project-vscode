@@ -10,19 +10,19 @@
  */
 ?>
 <div class="catalogs catalog content">
-    <div style="display:flex; align-items:center;">
-        <h3 style="margin-right:auto;">
+    <div style="display:flex; align-items:center; margin-bottom: 1.5rem;">
+        <h3 style="margin:0; margin-right:auto; color: #2c3e50;">
             <?= __('Product Catalog') ?>
         </h3>
 
         <div style="display:flex; gap:10px;">
             <?= $this->Html->link(
-                __('My Order'),
+                __('My Orders'),
                 ['prefix' => 'Buyer', 'controller' => 'Orders', 'action' => 'index'],
                 ['class' => 'button order-button']
             ) ?>
             <?= $this->Html->link(
-                __('My Cart'),
+                '🛒 ' . __('My Cart'),
                 ['prefix' => 'Buyer', 'controller' => 'CartItems', 'action' => 'index'],
                 ['class' => 'button cart-button']
             ) ?>

@@ -14,20 +14,23 @@
  * @var \App\View\AppView $this
  */
 
-$cakeDescription = 'CakePHP: the rapid development php framework';
+$cakeDescription = 'Koalala Finds';
+$userName = $this->request->getAttribute('identity');
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <?= $this->Html->charset() ?>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
-        <?= $cakeDescription ?>:
-        <?= $this->fetch('title') ?>
+        <?= $cakeDescription ?>
+        <?php if ($this->fetch('title')): ?>
+            - <?= $this->fetch('title') ?>
+        <?php endif; ?>
     </title>
     <?= $this->Html->meta('icon') ?>
 
-    <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake']) ?>
+    <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake', 'styles']) ?>
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
@@ -36,11 +39,43 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
 <body>
     <nav class="top-nav">
         <div class="top-nav-title">
-            <a href="<?= $this->Url->build('/') ?>"><span>Cake</span>PHP</a>
+            <a href="<?= $this->Url->build('/') ?>">
+                <span>Koalala</span> Finds
+            </a>
         </div>
         <div class="top-nav-links">
-            <a target="_blank" rel="noopener" href="https://book.cakephp.org/4/">Documentation</a>
-            <a target="_blank" rel="noopener" href="https://api.cakephp.org/">API</a>
+            <?php if ($userName): ?>
+                <a href="<?= $this->Url->build(['controller' => 'Catalogs', 'action' => 'index']) ?>">
+                    Catalog
+                </a>
+                <?php if ($userName->role === 'admin'): ?>
+                    <a href="<?= $this->Url->build(['prefix' => 'Admin', 'controller' => 'Products', 'action' => 'index']) ?>">
+                        Admin Panel
+                    </a>
+                <?php elseif ($userName->role === 'seller'): ?>
+                    <a href="<?= $this->Url->build(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']) ?>">
+                        My Products
+                    </a>
+                <?php endif; ?>
+                <?php if ($userName->role === 'buyer' || $userName->role === 'admin'): ?>
+                    <a href="<?= $this->Url->build(['prefix' => 'Buyer', 'controller' => 'CartItems', 'action' => 'index']) ?>">
+                        Cart
+                    </a>
+                    <a href="<?= $this->Url->build(['prefix' => 'Buyer', 'controller' => 'Orders', 'action' => 'index']) ?>">
+                        Orders
+                    </a>
+                <?php endif; ?>
+                <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'logout']) ?>">
+                    Logout (<?= h($userName->name) ?>)
+                </a>
+            <?php else: ?>
+                <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'login']) ?>">
+                    Login
+                </a>
+                <a href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'register']) ?>">
+                    Register
+                </a>
+            <?php endif; ?>
         </div>
     </nav>
     <main class="main">
@@ -50,6 +85,7 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
         </div>
     </main>
     <footer>
+        <p>&copy; <?= date('Y') ?> Koalala Finds. All rights reserved.</p>
     </footer>
 </body>
 </html>

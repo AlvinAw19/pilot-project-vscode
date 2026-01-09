@@ -3,13 +3,24 @@
 ?>
 <div class="users form">
     <?= $this->Flash->render() ?>
-    <h2><?= __('Welcome to Koalala Finds') ?></h2>
+    <h2><?= __('Koalala Finds') ?></h2>
     <h3><?= __('Login') ?></h3>
     <?= $this->Form->create() ?>
     <fieldset>
-        <legend><?= __('Please enter your username and password') ?></legend>
-        <?= $this->Form->control('email', ['required' => true, 'label' => __('Email')]) ?>
-        <?= $this->Form->control('password', ['required' => true, 'label' => __('Password')]) ?>
+        <div class="input">
+            <?= $this->Form->control('email', [
+                'required' => true,
+                'label' => __('Email'),
+                'placeholder' => 'your@email.com'
+            ]) ?>
+        </div>
+        <div class="input">
+            <?= $this->Form->control('password', [
+                'required' => true,
+                'label' => __('Password'),
+                'placeholder' => '••••••••'
+            ]) ?>
+        </div>
     </fieldset>
     <?= $this->Form->submit(__('Login')); ?>
     <?= $this->Form->end() ?>
