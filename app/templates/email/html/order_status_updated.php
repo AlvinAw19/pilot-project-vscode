@@ -28,14 +28,14 @@
         
         <div class="status-box">
             <div class="status-label">Current Status:</div>
-            <div class="status-value"><?= h($order->order_items[0]->delivery_status ?? 'Pending') ?></div>
+            <div class="status-value"><?= h($orderItem->delivery_status ?? 'Pending') ?></div>
         </div>
 
         <div class="order-info">
-            <p><span class="info-label">Order Number:</span> #<?= $order->id ?></p>
-            <p><span class="info-label">Product:</span> <?= h($order->order_items[0]->product->name ?? 'Product') ?></p>
-            <p><span class="info-label">Quantity:</span> <?= $order->order_items[0]->quantity ?></p>
-            <p><span class="info-label">Amount:</span> $<?= number_format($order->total_amount, 2) ?></p>
+            <p><span class="info-label">Order Number:</span> #<?= $orderItem->order_id ?></p>
+            <p><span class="info-label">Product:</span> <?= h($orderItem->product->name ?? 'Product') ?></p>
+            <p><span class="info-label">Quantity:</span> <?= $orderItem->quantity ?></p>
+            <p><span class="info-label">Amount:</span> $<?= number_format($orderItem->price * $orderItem->quantity, 2) ?></p>
         </div>
 
         <p>You can track your order by logging into your account.</p>

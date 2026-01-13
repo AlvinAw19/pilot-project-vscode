@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Controller\Controller;
+use Cake\Mailer\MailerAwareTrait;
 
 /**
  * Application Controller
@@ -28,6 +29,7 @@ use Cake\Controller\Controller;
  */
 class AppController extends Controller
 {
+    use MailerAwareTrait;
     /**
      * Initialization hook method.
      *

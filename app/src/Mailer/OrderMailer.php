@@ -57,18 +57,18 @@ class OrderMailer extends Mailer
     /**
      * Send order status update email to buyer
      *
-     * @param \App\Model\Entity\Order $order Order entity
+     * @param \App\Model\Entity\OrderItem $orderItem Order item entity
      * @param \App\Model\Entity\User $buyer Buyer entity
      * @return void
      */
-    public function orderStatusUpdated($order, $buyer)
+    public function orderStatusUpdated($orderItem, $buyer)
     {
         $this
             ->setTo($buyer->email)
-            ->setSubject('Order Status Updated #' . $order->id)
+            ->setSubject('Order Status Updated - Item #' . $orderItem->id)
             ->setEmailFormat('both')
             ->setViewVars([
-                'order' => $order,
+                'orderItem' => $orderItem,
                 'buyer' => $buyer,
             ])
             ->viewBuilder()

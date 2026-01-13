@@ -4,18 +4,18 @@ Dear <?= $buyer->name ?>,
 
 The delivery status of your order item has been updated.
 
-Current Status: <?= $order->order_items[0]->delivery_status ?? 'Pending' ?>
+Current Status: <?= $orderItem->delivery_status ?? 'Pending' ?>
 
 
 Order Details:
 --------------
-Order Number: #<?= $order->id ?>
+Order Number: #<?= $orderItem->order_id ?>
 
-Product: <?= $order->order_items[0]->product->name ?? 'Product' ?>
+Product: <?= $orderItem->product->name ?? 'Product' ?>
 
-Quantity: <?= $order->order_items[0]->quantity ?>
+Quantity: <?= $orderItem->quantity ?>
 
-Amount: $<?= number_format($order->total_amount, 2) ?>
+Amount: $<?= number_format($orderItem->price * $orderItem->quantity, 2) ?>
 
 
 You can track your order by logging into your account.

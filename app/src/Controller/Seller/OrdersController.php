@@ -70,46 +70,30 @@ class OrdersController extends AppController
         $orderItems = $this->OrderItems
             ->find()
             ->where(['OrderItems.id IN' => $itemIds])
-            ->contain(['Products'])
+            ->contain(['Products', 'Orders' => ['Users']])
             ->all();
 
         $updatedCount = 0;
-        $orderIdsToNotify = [];
 
         foreach ($orderItems as $orderItem) {
             $this->Authorization->authorize($orderItem);
             $orderItem->delivery_status = $newStatus;
             if ($this->OrderItems->save($orderItem)) {
                 $updatedCount++;
-                // Track unique order IDs for notification
-                if (!in_array($orderItem->order_id, $orderIdsToNotify)) {
-                    $orderIdsToNotify[] = $orderItem->order_id;
-                }
-            }
-        }
-
-        if ($updatedCount > 0) {
-            $this->Flash->success(__('Updated {0} item(s) to {1}.', $updatedCount, $newStatus));
-
-            // Send email notifications to buyers for each affected order
-            $ordersTable = $this->fetchTable('Orders');
-            foreach ($orderIdsToNotify as $orderId) {
+                // Send email notification to buyer for this item
                 try {
-                    /** @var \App\Model\Entity\Order $order */
-                    $order = $ordersTable->get($orderId, [
-                        'contain' => ['OrderItems' => ['Products'], 'Users'],
-                    ]);
-
-                    // Send status update email to buyer
-                    if (isset($order->user)) {
-                        (new \App\Mailer\OrderMailer())
-                            ->send('orderStatusUpdated', [$order, $order->user]);
+                    if (isset($orderItem->order->user)) {
+                        $this->getMailer('Order')->send('orderStatusUpdated', [$orderItem, $orderItem->order->user]);
                     }
                 } catch (\Exception $e) {
                     // Log error but don't stop the update process
                     \Cake\Log\Log::error('Failed to send order status update email: ' . $e->getMessage());
                 }
             }
+        }
+
+        if ($updatedCount > 0) {
+            $this->Flash->success(__('Updated {0} item(s) to {1}.', $updatedCount, $newStatus));
         }
 
         return $this->redirect(['action' => 'index']);

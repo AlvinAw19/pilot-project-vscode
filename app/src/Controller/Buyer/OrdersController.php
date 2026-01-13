@@ -175,8 +175,7 @@ class OrdersController extends AppController
 
                 // Send confirmation email to buyer
                 try {
-                    (new \App\Mailer\OrderMailer())
-                        ->send('buyerOrderConfirmation', [$order, $order->user]);
+                    $this->getMailer('Order')->send('buyerOrderConfirmation', [$order, $order->user]);
                 } catch (\Exception $e) {
                     // Log error but don't stop the checkout process
                     \Cake\Log\Log::error('Failed to send buyer confirmation email: ' . $e->getMessage());
@@ -190,8 +189,7 @@ class OrdersController extends AppController
 
                     if (!empty($orderItemWithData->product->user)) {
                         try {
-                            (new \App\Mailer\OrderMailer())
-                                ->send('sellerOrderNotification', [$orderItemWithData, $orderItemWithData->product->user]);
+                            $this->getMailer('Order')->send('sellerOrderNotification', [$orderItemWithData, $orderItemWithData->product->user]);
                         } catch (\Exception $e) {
                             // Log error but don't stop the checkout process
                             \Cake\Log\Log::error('Failed to send seller notification email: ' . $e->getMessage());
