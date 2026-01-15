@@ -14,13 +14,13 @@
     </aside>
     <div class="column-responsive column-80">
         <div class="products form content">
-            <?= $this->Form->create($product) ?>
+            <?= $this->Form->create($product, ['enctype' => 'multipart/form-data']) ?>
             <fieldset>
                 <legend><?= __('Add Product') ?></legend>
                 <?= $this->Form->control('category_id', ['options' => $categories]) ?>
                 <?= $this->Form->control('name') ?>
                 <?= $this->Form->control('description') ?>
-                <?= $this->Form->control('image_link') ?>
+                <?= $this->Form->control('image_link', ['type' => 'file', 'label' => 'Image']) ?>
                 <?= $this->Form->control('stock') ?>
                 <?= $this->Form->control('price') ?>
             </fieldset>

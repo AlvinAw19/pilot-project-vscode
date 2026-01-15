@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Seller;
 
 use App\Controller\AppController;
+use App\Service\MinioService;
 
 /**
  * Products Controller
@@ -65,7 +66,17 @@ class ProductsController extends AppController
         $this->Authorization->authorize($product);
 
         if ($this->request->is('post')) {
-            $product = $this->Products->patchEntity($product, $this->request->getData());
+            $data = $this->request->getData();
+            if (!empty($data['image_link']) && $data['image_link']->getError() === UPLOAD_ERR_OK) {
+                $file = $data['image_link'];
+                $extension = pathinfo($file->getClientFilename(), PATHINFO_EXTENSION);
+                $path = 'products/' . uniqid() . '.' . $extension;
+                $minioService = new MinioService();
+                $data['image_link'] = $minioService->upload($file, $path);
+            } else {
+                unset($data['image_link']);
+            }
+            $product = $this->Products->patchEntity($product, $data);
             $product->seller_id = $this->request->getAttribute('identity')->id;
             if ($this->Products->save($product)) {
                 $this->Flash->success(__('The product has been saved.'));
@@ -95,7 +106,17 @@ class ProductsController extends AppController
         $this->Authorization->authorize($product);
 
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $product = $this->Products->patchEntity($product, $this->request->getData());
+            $data = $this->request->getData();
+            if (!empty($data['image_link']) && $data['image_link']->getError() === UPLOAD_ERR_OK) {
+                $file = $data['image_link'];
+                $extension = pathinfo($file->getClientFilename(), PATHINFO_EXTENSION);
+                $path = 'products/' . uniqid() . '.' . $extension;
+                $minioService = new MinioService();
+                $data['image_link'] = $minioService->upload($file, $path);
+            } else {
+                unset($data['image_link']);
+            }
+            $product = $this->Products->patchEntity($product, $data);
             if ($this->Products->save($product)) {
                 $this->Flash->success(__('The product has been saved.'));
 
