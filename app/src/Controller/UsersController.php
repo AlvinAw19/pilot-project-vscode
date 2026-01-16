@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Form\ForgotPasswordForm;
+use App\Form\ResetPasswordForm;
+use App\Mailer\UserMailer;
 use App\Model\Entity\User;
 use Cake\Event\EventInterface;
 
@@ -29,7 +32,7 @@ class UsersController extends AppController
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
-        $this->Authentication->addUnauthenticatedActions(['login', 'register']);
+        $this->Authentication->addUnauthenticatedActions(['login', 'register', 'forgotPassword', 'resetPassword']);
     }
 
     /**
@@ -91,6 +94,65 @@ class UsersController extends AppController
         }
 
         return null;
+    }
+
+    /**
+     * Forgot Password method
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function forgotPassword()
+    {
+        $this->Authorization->skipAuthorization();
+        $form = new ForgotPasswordForm();
+        if ($this->request->is('post')) {
+            if ($form->execute($this->request->getData())) {
+                $email = $this->request->getData('email');
+                $token = $this->Users->generateResetToken($email);
+                if ($token) {
+                    $mailer = new UserMailer();
+                    $mailer->passwordResetEmail($email, $token);
+                    $this->Flash->success(__('If the email exists, a reset link has been sent.'));
+                } else {
+                    $this->Flash->success(__('If the email exists, a reset link has been sent.'));
+                }
+                return $this->redirect(['action' => 'login']);
+            } else {
+                $this->Flash->error(__('Please enter a valid email.'));
+            }
+        }
+        $this->set('form', $form);
+    }
+
+    /**
+     * Reset Password method
+     *
+     * @param string|null $token Reset token
+     * @return \Cake\Http\Response|null|void Renders view
+     * @throws \Cake\Http\Exception\NotFoundException
+     */
+    public function resetPassword(?string $token = null)
+    {
+        $this->Authorization->skipAuthorization();
+        if (!$token) {
+            throw new \Cake\Http\Exception\NotFoundException();
+        }
+
+        $form = new ResetPasswordForm();
+        if ($this->request->is('post')) {
+            if ($form->execute($this->request->getData())) {
+                $newPassword = $this->request->getData('password');
+                if ($this->Users->resetPassword($token, $newPassword)) {
+                    $this->Flash->success(__('Password has been reset. Please log in.'));
+                    return $this->redirect(['action' => 'login']);
+                } else {
+                    $this->Flash->error(__('Invalid or expired token.'));
+                }
+            } else {
+                $this->Flash->error(__('Please correct the errors below.'));
+            }
+        }
+        $this->set(compact('form', 'token'));
     }
 
     /**
