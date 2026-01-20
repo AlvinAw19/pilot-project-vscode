@@ -16,6 +16,8 @@ use Cake\ORM\Entity;
  * @property string $address
  * @property string|null $description
  * @property string $role
+ * @property string|null $google_id
+ * @property string|null $provider
  * @property \Cake\I18n\FrozenTime|null $deleted
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime|null $modified
@@ -42,6 +44,8 @@ class User extends Entity
         'address' => true,
         'description' => true,
         'role' => true,
+        'google_id' => true,
+        'provider' => true,
         'deleted' => true,
         'created' => true,
         'modified' => true,

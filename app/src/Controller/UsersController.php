@@ -5,6 +5,8 @@ namespace App\Controller;
 
 use App\Model\Entity\User;
 use Cake\Event\EventInterface;
+use Cake\Core\Configure;
+use League\OAuth2\Client\Provider\Google;
 
 /**
  * Users Controller
@@ -29,7 +31,7 @@ class UsersController extends AppController
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
-        $this->Authentication->addUnauthenticatedActions(['login', 'register']);
+        $this->Authentication->addUnauthenticatedActions(['login', 'register', 'googleLogin', 'googleCallback', 'googleSignup']);
     }
 
     /**
@@ -108,5 +110,199 @@ class UsersController extends AppController
         $this->Authentication->logout();
 
         return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+    }
+
+    /**
+     * Initiates Google OAuth login.
+     *
+     * @return \Cake\Http\Response|null Redirects to Google OAuth consent screen.
+     */
+    public function googleLogin()
+    {
+        $this->Authorization->skipAuthorization();
+        $provider = new Google([
+            'clientId' => Configure::read('GoogleOAuth.clientId'),
+            'clientSecret' => Configure::read('GoogleOAuth.clientSecret'),
+            'redirectUri' => Configure::read('GoogleOAuth.redirectUri'),
+        ]);
+
+        $authUrl = $provider->getAuthorizationUrl(['prompt' => 'select_account']);
+        $this->request->getSession()->write('oauth2state', $provider->getState());
+        $this->request->getSession()->write('oauth_mode', 'login'); // Flag for login
+
+        return $this->redirect($authUrl);
+    }
+
+    /**
+     * Initiates Google OAuth signup.
+     *
+     * @return \Cake\Http\Response|null Redirects to Google OAuth consent screen.
+     */
+    public function googleSignup()
+    {
+        $this->Authorization->skipAuthorization();
+        $provider = new Google([
+            'clientId' => Configure::read('GoogleOAuth.clientId'),
+            'clientSecret' => Configure::read('GoogleOAuth.clientSecret'),
+            'redirectUri' => Configure::read('GoogleOAuth.redirectUri'),
+        ]);
+
+        $authUrl = $provider->getAuthorizationUrl(['prompt' => 'select_account']);
+        $this->request->getSession()->write('oauth2state', $provider->getState());
+        $this->request->getSession()->write('oauth_mode', 'signup'); // Flag for signup
+
+        return $this->redirect($authUrl);
+    }
+
+    /**
+     * Handles Google OAuth callback.
+     *
+     * @return \Cake\Http\Response|null Redirects based on login result.
+     */
+    public function googleCallback()
+    {
+        $this->Authorization->skipAuthorization();
+        if ($this->request->getQuery('error')) {
+            $this->Flash->error(__('Access denied'));
+            return $this->redirect(['action' => 'login']);
+        }
+
+        $provider = new Google([
+            'clientId' => Configure::read('GoogleOAuth.clientId'),
+            'clientSecret' => Configure::read('GoogleOAuth.clientSecret'),
+            'redirectUri' => Configure::read('GoogleOAuth.redirectUri'),
+        ]);
+
+        $session = $this->request->getSession();
+        $expectedState = $session->read('oauth2state');
+        $providedState = $this->request->getQuery('state');
+
+        if (empty($providedState) || ($providedState !== $expectedState)) {
+            $session->delete('oauth2state');
+            $this->Flash->error(__('Invalid state'));
+            return $this->redirect(['action' => 'login']);
+        }
+
+        try {
+            $token = $provider->getAccessToken('authorization_code', [
+                'code' => $this->request->getQuery('code')
+            ]);
+
+            $user = $provider->getResourceOwner($token);
+
+            $mode = $session->read('oauth_mode');
+            $session->delete('oauth_mode'); // Clean up
+
+            // Find user by google_id
+            $existingUser = $this->Users->find()->where(['google_id' => $user->getId()])->first();
+
+            if ($mode === 'login') {
+                if ($existingUser) {
+                    $this->Authentication->setIdentity($existingUser);
+                    return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+                } else {
+                    // Auto sign up for login
+                    $existingByEmail = $this->Users->find()->where(['email' => $user->getEmail()])->first();
+                    if ($existingByEmail) {
+                        if ($existingByEmail->google_id) {
+                            // Already linked, login
+                            $this->Authentication->setIdentity($existingByEmail);
+                            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+                        } else {
+                            // Email exists but not linked to Google, link it
+                            $existingByEmail->google_id = $user->getId();
+                            $existingByEmail->provider = 'google';
+                            if ($this->Users->save($existingByEmail)) {
+                                $this->Authentication->setIdentity($existingByEmail);
+                                return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+                            } else {
+                                $this->Flash->error(__('Unable to link Google account. Please contact support.'));
+                                return $this->redirect(['action' => 'login']);
+                            }
+                        }
+                    } else {
+                        // Create new user
+                        $newUser = $this->Users->newEntity([
+                            'name' => $user->getName(),
+                            'email' => $user->getEmail(),
+                            'google_id' => $user->getId(),
+                            'provider' => 'google',
+                            'role' => 'buyer',
+                            'address' => 'Not provided',
+                            'password' => bin2hex(random_bytes(16)), // Random password for OAuth users
+                        ]);
+
+                        if ($this->Users->save($newUser)) {
+                            $this->Authentication->setIdentity($newUser);
+                            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+                        } else {
+                            $errors = $newUser->getErrors();
+                            $errorMessages = [];
+                            foreach ($errors as $field => $fieldErrors) {
+                                $errorMessages[] = $field . ': ' . implode(', ', $fieldErrors);
+                            }
+                            $this->Flash->error(__('Unable to create user: ') . implode('; ', $errorMessages));
+                            return $this->redirect(['action' => 'login']);
+                        }
+                    }
+                }
+            } elseif ($mode === 'signup') {
+                if ($existingUser) {
+                    $this->Flash->error(__('An account with this Google account already exists. Please login instead.'));
+                    return $this->redirect(['action' => 'login']);
+                } else {
+                    // Check if email already exists
+                    $existingByEmail = $this->Users->find()->where(['email' => $user->getEmail()])->first();
+                    if ($existingByEmail) {
+                        if ($existingByEmail->google_id) {
+                            // Already linked, login
+                            $this->Authentication->setIdentity($existingByEmail);
+                            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+                        } else {
+                            // Email exists but not linked to Google, link it
+                            $existingByEmail->google_id = $user->getId();
+                            $existingByEmail->provider = 'google';
+                            if ($this->Users->save($existingByEmail)) {
+                                $this->Authentication->setIdentity($existingByEmail);
+                                return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+                            } else {
+                                $this->Flash->error(__('Unable to link Google account. Please contact support.'));
+                                return $this->redirect(['action' => 'login']);
+                            }
+                        }
+                    } else {
+                        // Create new user
+                        $newUser = $this->Users->newEntity([
+                            'name' => $user->getName(),
+                            'email' => $user->getEmail(),
+                            'google_id' => $user->getId(),
+                            'provider' => 'google',
+                            'role' => 'buyer',
+                            'address' => 'Not provided',
+                            'password' => bin2hex(random_bytes(16)), // Random password for OAuth users
+                        ]);
+
+                        if ($this->Users->save($newUser)) {
+                            $this->Authentication->setIdentity($newUser);
+                            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+                        } else {
+                            $errors = $newUser->getErrors();
+                            $errorMessages = [];
+                            foreach ($errors as $field => $fieldErrors) {
+                                $errorMessages[] = $field . ': ' . implode(', ', $fieldErrors);
+                            }
+                            $this->Flash->error(__('Unable to create user: ') . implode('; ', $errorMessages));
+                            return $this->redirect(['action' => 'login']);
+                        }
+                    }
+                }
+            } else {
+                $this->Flash->error(__('Invalid OAuth mode.'));
+                return $this->redirect(['action' => 'login']);
+            }
+        } catch (\Exception $e) {
+            $this->Flash->error(__('OAuth error: ') . $e->getMessage());
+            return $this->redirect(['action' => 'login']);
+        }
     }
 }

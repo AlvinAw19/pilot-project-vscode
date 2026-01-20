@@ -67,13 +67,21 @@ class UsersTable extends Table
         $validator
             ->scalar('password')
             ->maxLength('password', 255)
-            ->requirePresence('password', 'create')
-            ->notEmptyString('password');
+            ->requirePresence('password', function ($context) {
+                return empty($context['data']['google_id']);
+            })
+            ->notEmptyString('password', null, function ($context) {
+                return empty($context['data']['google_id']);
+            });
 
         $validator
             ->scalar('address')
-            ->requirePresence('address', 'create')
-            ->notEmptyString('address');
+            ->requirePresence('address', function ($context) {
+                return empty($context['data']['google_id']);
+            })
+            ->notEmptyString('address', null, function ($context) {
+                return empty($context['data']['google_id']);
+            });
 
         $validator
             ->scalar('description')
@@ -84,6 +92,16 @@ class UsersTable extends Table
             ->maxLength('role', 255)
             ->requirePresence('role', 'create')
             ->notEmptyString('role');
+
+        $validator
+            ->scalar('google_id')
+            ->maxLength('google_id', 255)
+            ->allowEmptyString('google_id');
+
+        $validator
+            ->scalar('provider')
+            ->maxLength('provider', 255)
+            ->allowEmptyString('provider');
 
         $validator
             ->dateTime('deleted')
