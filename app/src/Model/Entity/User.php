@@ -12,7 +12,7 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $name
  * @property string $email
- * @property string $password
+ * @property string|null $password
  * @property string $address
  * @property string|null $description
  * @property string $role
@@ -63,13 +63,13 @@ class User extends Entity
     /**
      * Mutator for password to hash it.
      *
-     * @param string $password Password to hash.
+     * @param string|null $password Password to hash.
      * @return string|null
      */
-    protected function _setPassword(string $password): ?string
+    protected function _setPassword($password)
     {
-        if (strlen($password) > 0) {
-            return (string)(new DefaultPasswordHasher())->hash($password);
+        if (is_string($password) && strlen($password) > 0) {
+            return (new DefaultPasswordHasher())->hash($password);
         }
 
         return null;

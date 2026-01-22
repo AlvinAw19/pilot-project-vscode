@@ -46,6 +46,15 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             $user->role = 'buyer';
+            // Require password and address for non-OAuth registration
+            if (empty($user->google_id)) {
+                if (empty($user->password)) {
+                    $user->setError('password', __('Password is required for registration.'));
+                }
+                if (empty($user->address)) {
+                    $user->setError('address', __('Address is required for registration.'));
+                }
+            }
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('The user has been saved.'));
 
@@ -86,6 +95,17 @@ class UsersController extends AppController
 
             // Guest fallback
             return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+        }
+        // Check if user is trying to login with email/password but has no password (OAuth user)
+        if ($this->request->is('post')) {
+            $email = $this->request->getData('email');
+            if ($email) {
+                $user = $this->Users->find()->where(['email' => $email])->first();
+                if ($user && $user->password === null) {
+                    $this->Flash->error(__('This account uses Google login. Please use the "Login with Google" button.'));
+                    return null;
+                }
+            }
         }
         // display error if user submitted and authentication failed
         if ($this->request->is('post') && ($result === null || !$result->isValid())) {
@@ -188,121 +208,86 @@ class UsersController extends AppController
                 'code' => $this->request->getQuery('code')
             ]);
 
-            $user = $provider->getResourceOwner($token);
-
+            $googleUser = $provider->getResourceOwner($token);
             $mode = $session->read('oauth_mode');
             $session->delete('oauth_mode'); // Clean up
 
-            // Find user by google_id
-            $existingUser = $this->Users->find()->where(['google_id' => $user->getId()])->first();
+            $user = $this->findOrCreateOAuthUser($googleUser, $mode);
 
-            if ($mode === 'login') {
-                if ($existingUser) {
-                    $this->Authentication->setIdentity($existingUser);
-                    return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
-                } else {
-                    // Auto sign up for login
-                    $existingByEmail = $this->Users->find()->where(['email' => $user->getEmail()])->first();
-                    if ($existingByEmail) {
-                        if ($existingByEmail->google_id) {
-                            // Already linked, login
-                            $this->Authentication->setIdentity($existingByEmail);
-                            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
-                        } else {
-                            // Email exists but not linked to Google, link it
-                            $existingByEmail->google_id = $user->getId();
-                            $existingByEmail->provider = 'google';
-                            if ($this->Users->save($existingByEmail)) {
-                                $this->Authentication->setIdentity($existingByEmail);
-                                return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
-                            } else {
-                                $this->Flash->error(__('Unable to link Google account. Please contact support.'));
-                                return $this->redirect(['action' => 'login']);
-                            }
-                        }
-                    } else {
-                        // Create new user
-                        $newUser = $this->Users->newEntity([
-                            'name' => $user->getName(),
-                            'email' => $user->getEmail(),
-                            'google_id' => $user->getId(),
-                            'provider' => 'google',
-                            'role' => 'buyer',
-                            'address' => 'Not provided',
-                            'password' => bin2hex(random_bytes(16)), // Random password for OAuth users
-                        ]);
-
-                        if ($this->Users->save($newUser)) {
-                            $this->Authentication->setIdentity($newUser);
-                            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
-                        } else {
-                            $errors = $newUser->getErrors();
-                            $errorMessages = [];
-                            foreach ($errors as $field => $fieldErrors) {
-                                $errorMessages[] = $field . ': ' . implode(', ', $fieldErrors);
-                            }
-                            $this->Flash->error(__('Unable to create user: ') . implode('; ', $errorMessages));
-                            return $this->redirect(['action' => 'login']);
-                        }
-                    }
-                }
-            } elseif ($mode === 'signup') {
-                if ($existingUser) {
-                    $this->Flash->error(__('An account with this Google account already exists. Please login instead.'));
-                    return $this->redirect(['action' => 'login']);
-                } else {
-                    // Check if email already exists
-                    $existingByEmail = $this->Users->find()->where(['email' => $user->getEmail()])->first();
-                    if ($existingByEmail) {
-                        if ($existingByEmail->google_id) {
-                            // Already linked, login
-                            $this->Authentication->setIdentity($existingByEmail);
-                            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
-                        } else {
-                            // Email exists but not linked to Google, link it
-                            $existingByEmail->google_id = $user->getId();
-                            $existingByEmail->provider = 'google';
-                            if ($this->Users->save($existingByEmail)) {
-                                $this->Authentication->setIdentity($existingByEmail);
-                                return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
-                            } else {
-                                $this->Flash->error(__('Unable to link Google account. Please contact support.'));
-                                return $this->redirect(['action' => 'login']);
-                            }
-                        }
-                    } else {
-                        // Create new user
-                        $newUser = $this->Users->newEntity([
-                            'name' => $user->getName(),
-                            'email' => $user->getEmail(),
-                            'google_id' => $user->getId(),
-                            'provider' => 'google',
-                            'role' => 'buyer',
-                            'address' => 'Not provided',
-                            'password' => bin2hex(random_bytes(16)), // Random password for OAuth users
-                        ]);
-
-                        if ($this->Users->save($newUser)) {
-                            $this->Authentication->setIdentity($newUser);
-                            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
-                        } else {
-                            $errors = $newUser->getErrors();
-                            $errorMessages = [];
-                            foreach ($errors as $field => $fieldErrors) {
-                                $errorMessages[] = $field . ': ' . implode(', ', $fieldErrors);
-                            }
-                            $this->Flash->error(__('Unable to create user: ') . implode('; ', $errorMessages));
-                            return $this->redirect(['action' => 'login']);
-                        }
-                    }
-                }
+            if ($user) {
+                $this->Authentication->setIdentity($user);
+                return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
             } else {
-                $this->Flash->error(__('Invalid OAuth mode.'));
+                $this->Flash->error(__('Unable to authenticate with Google.'));
                 return $this->redirect(['action' => 'login']);
             }
         } catch (\Exception $e) {
             $this->Flash->error(__('OAuth error: ') . $e->getMessage());
             return $this->redirect(['action' => 'login']);
+        }
+    }
+
+    /**
+     * Finds an existing OAuth user or creates/links a new one.
+     *
+     * @param \League\OAuth2\Client\Provider\GoogleUser $googleUser The Google user object.
+     * @param string $mode The OAuth mode ('login' or 'signup').
+     * @return \App\Model\Entity\User|null The user entity or null on failure.
+     */
+    private function findOrCreateOAuthUser($googleUser, $mode)
+    {
+        // Find user by google_id
+        $existingUser = $this->Users->find()->where(['google_id' => $googleUser->getId()])->first();
+
+        if ($mode === 'signup' && $existingUser) {
+            $this->Flash->error(__('An account with this Google account already exists. Please login instead.'));
+            return null;
+        }
+
+        if ($existingUser) {
+            return $existingUser;
+        }
+
+        // Check if email exists
+        $existingByEmail = $this->Users->find()->where(['email' => $googleUser->getEmail()])->first();
+
+        if ($existingByEmail) {
+            if ($existingByEmail->google_id) {
+                return $existingByEmail;
+            } else {
+                // Link existing account
+                $existingByEmail->google_id = $googleUser->getId();
+                $existingByEmail->provider = 'google';
+                if ($this->Users->save($existingByEmail)) {
+                    return $existingByEmail;
+                } else {
+                    $this->Flash->error(__('Unable to link Google account. Please contact support.'));
+                    return null;
+                }
+            }
+        } else {
+            // Create new user
+            $newUser = $this->Users->newEntity([
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'google_id' => $googleUser->getId(),
+                'provider' => 'google',
+                'role' => 'buyer',
+                'address' => null,
+                'password' => null,
+            ]);
+
+            if ($this->Users->save($newUser)) {
+                return $newUser;
+            } else {
+                $errors = $newUser->getErrors();
+                $errorMessages = [];
+                foreach ($errors as $field => $fieldErrors) {
+                    $errorMessages[] = $field . ': ' . implode(', ', $fieldErrors);
+                }
+                $this->Flash->error(__('Unable to create user: ') . implode('; ', $errorMessages));
+                return null;
+            }
         }
     }
 }

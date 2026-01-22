@@ -67,21 +67,11 @@ class UsersTable extends Table
         $validator
             ->scalar('password')
             ->maxLength('password', 255)
-            ->requirePresence('password', function ($context) {
-                return empty($context['data']['google_id']);
-            })
-            ->notEmptyString('password', null, function ($context) {
-                return empty($context['data']['google_id']);
-            });
+            ->allowEmptyString('password');
 
         $validator
             ->scalar('address')
-            ->requirePresence('address', function ($context) {
-                return empty($context['data']['google_id']);
-            })
-            ->notEmptyString('address', null, function ($context) {
-                return empty($context['data']['google_id']);
-            });
+            ->allowEmptyString('address');
 
         $validator
             ->scalar('description')
