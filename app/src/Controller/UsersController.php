@@ -31,7 +31,7 @@ class UsersController extends AppController
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
-        $this->Authentication->addUnauthenticatedActions(['login', 'register', 'googleLogin', 'googleCallback', 'googleSignup']);
+        $this->Authentication->addUnauthenticatedActions(['login', 'register', 'googleLogin', 'googleCallback']);
     }
 
     /**
@@ -133,7 +133,7 @@ class UsersController extends AppController
     }
 
     /**
-     * Initiates Google OAuth login.
+     * Initiates Google OAuth.
      *
      * @return \Cake\Http\Response|null Redirects to Google OAuth consent screen.
      */
@@ -148,28 +148,6 @@ class UsersController extends AppController
 
         $authUrl = $provider->getAuthorizationUrl(['prompt' => 'select_account']);
         $this->request->getSession()->write('oauth2state', $provider->getState());
-        $this->request->getSession()->write('oauth_mode', 'login'); // Flag for login
-
-        return $this->redirect($authUrl);
-    }
-
-    /**
-     * Initiates Google OAuth signup.
-     *
-     * @return \Cake\Http\Response|null Redirects to Google OAuth consent screen.
-     */
-    public function googleSignup()
-    {
-        $this->Authorization->skipAuthorization();
-        $provider = new Google([
-            'clientId' => Configure::read('GoogleOAuth.clientId'),
-            'clientSecret' => Configure::read('GoogleOAuth.clientSecret'),
-            'redirectUri' => Configure::read('GoogleOAuth.redirectUri'),
-        ]);
-
-        $authUrl = $provider->getAuthorizationUrl(['prompt' => 'select_account']);
-        $this->request->getSession()->write('oauth2state', $provider->getState());
-        $this->request->getSession()->write('oauth_mode', 'signup'); // Flag for signup
 
         return $this->redirect($authUrl);
     }
@@ -209,10 +187,8 @@ class UsersController extends AppController
             ]);
 
             $googleUser = $provider->getResourceOwner($token);
-            $mode = $session->read('oauth_mode');
-            $session->delete('oauth_mode'); // Clean up
 
-            $user = $this->findOrCreateOAuthUser($googleUser, $mode);
+            $user = $this->findOrCreateOAuthUser($googleUser);
 
             if ($user) {
                 $this->Authentication->setIdentity($user);
@@ -231,18 +207,12 @@ class UsersController extends AppController
      * Finds an existing OAuth user or creates/links a new one.
      *
      * @param \League\OAuth2\Client\Provider\GoogleUser $googleUser The Google user object.
-     * @param string $mode The OAuth mode ('login' or 'signup').
      * @return \App\Model\Entity\User|null The user entity or null on failure.
      */
-    private function findOrCreateOAuthUser($googleUser, $mode)
+    private function findOrCreateOAuthUser($googleUser)
     {
         // Find user by google_id
         $existingUser = $this->Users->find()->where(['google_id' => $googleUser->getId()])->first();
-
-        if ($mode === 'signup' && $existingUser) {
-            $this->Flash->error(__('An account with this Google account already exists. Please login instead.'));
-            return null;
-        }
 
         if ($existingUser) {
             return $existingUser;
