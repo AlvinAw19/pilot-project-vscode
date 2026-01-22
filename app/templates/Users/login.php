@@ -13,5 +13,6 @@
     </fieldset>
     <?= $this->Form->submit(__('Login')); ?>
     <?= $this->Form->end() ?>
-    <p><?= __('Don\'t have an account?') ?> <?= $this->Html->link(__('Register here'), ['action' => 'register']) ?></p>
+    <p><?= $this->Html->link(__('Login with Google'), ['action' => 'googleLogin'], ['class' => 'button']) ?></p>
+    <p><?= __('Don\'t have an account?') ?> <?= $this->Html->link(__('Register here'), ['action' => 'register']) ?> or <?= $this->Html->link(__('Sign up with Google'), ['action' => 'googleSignup'], ['class' => 'button']) ?></p>
 </div>
