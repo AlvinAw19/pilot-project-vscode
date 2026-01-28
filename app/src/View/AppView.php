@@ -39,5 +39,6 @@ class AppView extends View
     public function initialize(): void
     {
         $this->loadHelper('Image');
+        $this->loadHelper('Navigation');
     }
 }

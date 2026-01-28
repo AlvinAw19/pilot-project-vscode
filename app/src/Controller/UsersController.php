@@ -128,6 +128,7 @@ class UsersController extends AppController
     public function logout()
     {
         $this->Authentication->logout();
+        $this->Authorization->skipAuthorization();
 
         return $this->redirect(['controller' => 'Users', 'action' => 'login']);
     }
@@ -259,5 +260,15 @@ class UsersController extends AppController
                 return null;
             }
         }
+    }
+
+    /**
+     * Profile method - Placeholder for user profile.
+     *
+     * @return \Cake\Http\Response|null|void Renders view.
+     */
+    public function profile()
+    {
+        $this->Authorization->skipAuthorization();
     }
 }
