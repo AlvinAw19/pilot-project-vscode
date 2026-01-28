@@ -12,6 +12,7 @@
         <legend><?= __('Please enter your username and password') ?></legend>
         <?= $this->Form->control('email', ['required' => true, 'label' => __('Email')]) ?>
         <?= $this->Form->control('password', ['required' => true, 'label' => __('Password')]) ?>
+        <?= $this->Html->link(__('Forgot your password?'), ['action' => 'forgotPassword']) ?>
     </fieldset>
     <?= $this->Form->submit(__('Login')); ?>
     <?= $this->Form->end() ?>

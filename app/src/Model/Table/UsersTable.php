@@ -121,4 +121,51 @@ class UsersTable extends Table
 
         return $rules;
     }
+
+    /**
+     * Generate a password reset token for the user with the given email.
+     *
+     * @param string $email The user's email.
+     * @return string|null The generated token, or null if user not found.
+     */
+    public function generateResetToken(string $email): ?string
+    {
+        $user = $this->findByEmail($email)->first();
+        if (!$user) {
+            return null;
+        }
+
+        $token = bin2hex(random_bytes(32)); // Secure random token
+        $expiry = (new \DateTime())->modify('+1 hour'); // Expire in 1 hour
+
+        $user->password_reset_token = $token;
+        $user->password_reset_token_expiry = $expiry;
+        $this->save($user);
+
+        return $token;
+    }
+
+    /**
+     * Validate and reset the password using the token.
+     *
+     * @param string $token The reset token.
+     * @param string $newPassword The new password.
+     * @return bool True if reset successful, false otherwise.
+     */
+    public function resetPassword(string $token, string $newPassword): bool
+    {
+        $user = $this->find()
+            ->where(['password_reset_token' => $token])
+            ->first();
+
+        if (!$user || !$user->password_reset_token_expiry || $user->password_reset_token_expiry < new \DateTime()) {
+            return false; // Invalid or expired token
+        }
+
+        $user->password = $newPassword;
+        $user->password_reset_token = null;
+        $user->password_reset_token_expiry = null;
+
+        return (bool)$this->save($user);
+    }
 }

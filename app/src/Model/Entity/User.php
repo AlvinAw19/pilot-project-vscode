@@ -20,7 +20,8 @@ use Cake\ORM\Entity;
  * @property string|null $provider
  * @property \Cake\I18n\FrozenTime|null $deleted
  * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime|null $modified
+ * @property string|null $password_reset_token
+ * @property \Cake\I18n\FrozenTime|null $password_reset_token_expiry
  */
 class User extends Entity
 {
@@ -44,6 +45,8 @@ class User extends Entity
         'address' => true,
         'description' => true,
         'role' => true,
+        'password_reset_token' => true,
+        'password_reset_token_expiry' => true,
         'google_id' => true,
         'provider' => true,
         'deleted' => true,
