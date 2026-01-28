@@ -67,6 +67,19 @@ class UserPolicy
     }
 
     /**
+     * Check if $user can view/edit their own profile
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The logged-in user.
+     * @param \App\Model\Entity\User $profile The profile being accessed.
+     * @return bool
+     */
+    public function canProfile(IdentityInterface $user, User $profile)
+    {
+        // Users can only access their own profile
+        return $user->id === $profile->id;
+    }
+
+    /**
      * Check if $user can view admin logs
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.

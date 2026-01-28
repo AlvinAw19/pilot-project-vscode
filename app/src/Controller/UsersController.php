@@ -325,12 +325,62 @@ class UsersController extends AppController
     }
 
     /**
-     * Profile method - Placeholder for user profile.
+     * Profile method - View and edit current user's profile.
      *
-     * @return \Cake\Http\Response|null|void Renders view.
+     * Allows authenticated users to view and update their profile information
+     * including name, address, and password. Users who signed up via OAuth
+     * can set a local password here.
+     *
+     * @return \Cake\Http\Response|null|void Redirects on successful update, renders view otherwise.
      */
     public function profile()
     {
-        $this->Authorization->skipAuthorization();
+        $identity = $this->request->getAttribute('identity');
+        $userId = $identity->getIdentifier();
+
+        /** @var \App\Model\Entity\User $user */
+        $user = $this->Users->get($userId);
+
+        $this->Authorization->authorize($user, 'profile');
+
+        // Determine if user has a password set (for OAuth users who may not have one)
+        $hasPassword = $user->password !== null;
+
+        if ($this->request->is(['post', 'put', 'patch'])) {
+            $data = $this->request->getData();
+            $hasError = false;
+
+            // Handle password change/set
+            if (!empty($data['new_password'])) {
+                if ($data['new_password'] !== ($data['confirm_password'] ?? '')) {
+                    $this->Flash->error(__('Passwords do not match.'));
+                    $hasError = true;
+                } else {
+                    $data['password'] = $data['new_password'];
+                }
+            }
+
+            if (!$hasError) {
+                $user = $this->Users->patchEntity($user, $data, [
+                    'accessibleFields' => [
+                        'name' => true,
+                        'address' => true,
+                        'password' => true,
+                    ],
+                ]);
+
+                if ($this->Users->save($user)) {
+                    // Refresh the session identity with updated user data
+                    $this->Authentication->setIdentity($user);
+
+                    $this->Flash->success(__('Your profile has been updated.'));
+
+                    return $this->redirect(['action' => 'profile']);
+                }
+                $this->Flash->error(__('Your profile could not be updated. Please, try again.'));
+            }
+        }
+
+        $this->set(compact('user', 'hasPassword'));
     }
 }
