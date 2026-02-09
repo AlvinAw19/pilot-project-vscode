@@ -6,7 +6,6 @@ namespace App\View\Helper;
 use App\Model\Entity\User;
 use Authentication\IdentityInterface;
 use Cake\View\Helper;
-use Cake\View\Helper\HtmlHelper;
 
 /**
  * Navigation Helper
@@ -20,7 +19,7 @@ use Cake\View\Helper\HtmlHelper;
 class NavigationHelper extends Helper
 {
     /**
-     * List of helpers used by this helper
+     * Helpers used by this helper
      *
      * @var array<string>
      */
@@ -83,11 +82,6 @@ class NavigationHelper extends Helper
     {
         return [
             [
-                'label' => __('Dashboard'),
-                'url' => ['prefix' => false, 'controller' => 'Catalogs', 'action' => 'index'],
-                'active' => $this->isActive('Catalogs'),
-            ],
-            [
                 'label' => __('My Profile'),
                 'url' => ['prefix' => false, 'controller' => 'Users', 'action' => 'profile'],
                 'active' => $this->isActive('Users', 'profile'),
@@ -114,11 +108,6 @@ class NavigationHelper extends Helper
                 'active' => $this->isActive('Reports', null, 'Seller'),
             ],
             [
-                'label' => __('My Profile'),
-                'url' => ['prefix' => false, 'controller' => 'Users', 'action' => 'profile'],
-                'active' => $this->isActive('Users', 'profile'),
-            ],
-            [
                 'label' => __('My Products'),
                 'url' => ['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index'],
                 'active' => $this->isActive('Products', null, 'Seller'),
@@ -127,6 +116,11 @@ class NavigationHelper extends Helper
                 'label' => __('My Orders'),
                 'url' => ['prefix' => 'Seller', 'controller' => 'Orders', 'action' => 'index'],
                 'active' => $this->isActive('Orders', null, 'Seller'),
+            ],
+            [
+                'label' => __('My Profile'),
+                'url' => ['prefix' => false, 'controller' => 'Users', 'action' => 'profile'],
+                'active' => $this->isActive('Users', 'profile'),
             ],
             [
                 'label' => __('Log Out'),
@@ -150,11 +144,6 @@ class NavigationHelper extends Helper
                 'active' => $this->isActive('Reports', null, 'Admin'),
             ],
             [
-                'label' => __('My Profile'),
-                'url' => ['prefix' => false, 'controller' => 'Users', 'action' => 'profile'],
-                'active' => $this->isActive('Users', 'profile'),
-            ],
-            [
                 'label' => __('My Users'),
                 'url' => ['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index'],
                 'active' => $this->isActive('Users', null, 'Admin'),
@@ -173,6 +162,16 @@ class NavigationHelper extends Helper
                 'label' => __('My Orders'),
                 'url' => ['prefix' => 'Admin', 'controller' => 'Orders', 'action' => 'index'],
                 'active' => $this->isActive('Orders', null, 'Admin'),
+            ],
+            [
+                'label' => __('Logs'),
+                'url' => ['prefix' => 'Admin', 'controller' => 'Logs', 'action' => 'index'],
+                'active' => $this->isActive('Logs', null, 'Admin'),
+            ],
+            [
+                'label' => __('My Profile'),
+                'url' => ['prefix' => false, 'controller' => 'Users', 'action' => 'profile'],
+                'active' => $this->isActive('Users', 'profile'),
             ],
             [
                 'label' => __('Log Out'),
@@ -221,7 +220,7 @@ class NavigationHelper extends Helper
      * @param \Authentication\IdentityInterface|null $identity The current user identity.
      * @return string
      */
-    public function render(?IdentityInterface $identity): string
+    public function render($identity): string
     {
         $links = $this->getLinks($identity);
         $html = '';

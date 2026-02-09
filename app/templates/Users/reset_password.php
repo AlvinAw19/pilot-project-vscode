@@ -10,7 +10,6 @@
     <p>Enter your new password below.</p>
     <?= $this->Form->create($form) ?>
     <fieldset>
-        <legend>New Password</legend>
         <?= $this->Form->control('password', ['label' => 'New Password', 'type' => 'password']) ?>
         <?= $this->Form->control('confirm_password', ['label' => 'Confirm Password', 'type' => 'password']) ?>
     </fieldset>

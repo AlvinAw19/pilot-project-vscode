@@ -13,15 +13,16 @@ use Cake\ORM\Entity;
  * @property string $name
  * @property string $email
  * @property string|null $password
- * @property string $address
+ * @property string|null $address
  * @property string|null $description
  * @property string $role
- * @property string|null $google_id
- * @property string|null $provider
  * @property \Cake\I18n\FrozenTime|null $deleted
  * @property \Cake\I18n\FrozenTime $created
+ * @property \Cake\I18n\FrozenTime|null $modified
  * @property string|null $password_reset_token
  * @property \Cake\I18n\FrozenTime|null $password_reset_token_expiry
+ * @property string|null $google_id
+ * @property string|null $provider
  */
 class User extends Entity
 {
@@ -69,10 +70,10 @@ class User extends Entity
      * @param string|null $password Password to hash.
      * @return string|null
      */
-    protected function _setPassword($password)
+    protected function _setPassword(?string $password): ?string
     {
-        if (is_string($password) && strlen($password) > 0) {
-            return (new DefaultPasswordHasher())->hash($password);
+        if ($password !== null) {
+            return (string)(new DefaultPasswordHasher())->hash($password);
         }
 
         return null;

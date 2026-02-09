@@ -23,6 +23,28 @@ class UserPolicy
     }
 
     /**
+     * Check if $user can index admin dashboard
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    public function canAdminIndex(IdentityInterface $user)
+    {
+        return $this->isAdmin($user);
+    }
+
+    /**
+     * Check if $user can index seller dashboard
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    public function canSellerIndex(IdentityInterface $user)
+    {
+        return $this->isSeller($user);
+    }
+
+    /**
      * Check if $user can add User
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
@@ -56,47 +78,24 @@ class UserPolicy
     }
 
     /**
+     * Check if $user can delete User
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @param \App\Model\Entity\User $profile The profile being accessed.
+     * @return bool
+     */
+    public function canProfile(IdentityInterface $user, User $profile): bool
+    {
+        return $user->id === $profile->id;
+    }
+
+    /**
      * Check if $user can view User
      *
      * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
      */
     public function canView(IdentityInterface $user)
-    {
-        return $this->isAdmin($user);
-    }
-
-    /**
-     * Check if $user can view/edit their own profile
-     *
-     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The logged-in user.
-     * @param \App\Model\Entity\User $profile The profile being accessed.
-     * @return bool
-     */
-    public function canProfile(IdentityInterface $user, User $profile)
-    {
-        // Users can only access their own profile
-        return $user->id === $profile->id;
-    }
-
-    /**
-     * Check if $user can view admin logs
-     *
-     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
-     * @return bool
-     */
-    public function canViewLogs(IdentityInterface $user)
-    {
-        return $this->isAdmin($user);
-    }
-
-    /**
-     * Check if $user can access admin dashboard
-     *
-     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
-     * @return bool
-     */
-    public function canAdminIndex(IdentityInterface $user)
     {
         return $this->isAdmin($user);
     }
@@ -110,5 +109,16 @@ class UserPolicy
     private function isAdmin(IdentityInterface $user)
     {
         return $user->role === User::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if the user is a seller
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    private function isSeller(IdentityInterface $user)
+    {
+        return $user->role === User::ROLE_SELLER;
     }
 }

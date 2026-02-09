@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\I18n\FrozenTime;
+use Cake\Log\Log;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Exception;
 
 /**
  * Users Model
@@ -13,6 +16,7 @@ use Cake\Validation\Validator;
  * @property \App\Model\Table\ProductsTable&\Cake\ORM\Association\HasMany $Products
  * @property \App\Model\Table\CartItemsTable&\Cake\ORM\Association\HasMany $CartItems
  * @property \App\Model\Table\OrderItemsTable&\Cake\ORM\Association\HasMany $OrderItems
+ * @property \App\Model\Table\LogsTable&\Cake\ORM\Association\HasMany $Logs
  * @method \App\Model\Entity\User newEmptyEntity()
  * @method \App\Model\Entity\User newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\User[] newEntities(array $data, array $options = [])
@@ -48,6 +52,7 @@ class UsersTable extends Table
         $this->hasMany('Products');
         $this->hasMany('CartItems', ['foreignKey' => 'buyer_id']);
         $this->hasMany('Orders', ['foreignKey' => 'buyer_id']);
+        $this->hasMany('Logs', ['foreignKey' => 'user_id']);
     }
 
     /**
@@ -130,17 +135,28 @@ class UsersTable extends Table
      */
     public function generateResetToken(string $email): ?string
     {
-        $user = $this->findByEmail($email)->first();
+        /** @var \App\Model\Entity\User|null $user */
+        $user = $this->find()
+            ->where(['email' => $email])
+            ->first();
+
         if (!$user) {
             return null;
         }
 
-        $token = bin2hex(random_bytes(32)); // Secure random token
-        $expiry = (new \DateTime())->modify('+1 hour'); // Expire in 1 hour
+        $token = bin2hex(random_bytes(32)); // generate random token
+        $expiry = FrozenTime::now()->addHour(); // Expire in 1 hour
 
         $user->password_reset_token = $token;
         $user->password_reset_token_expiry = $expiry;
-        $this->save($user);
+
+        try {
+            $this->saveOrFail($user);
+        } catch (Exception $e) {
+            Log::error('Failed to save password reset token for user ' . $user->id . ': ' . $e->getMessage());
+
+            return null;
+        }
 
         return $token;
     }
@@ -154,18 +170,32 @@ class UsersTable extends Table
      */
     public function resetPassword(string $token, string $newPassword): bool
     {
+        /** @var \App\Model\Entity\User|null $user */
         $user = $this->find()
             ->where(['password_reset_token' => $token])
             ->first();
 
-        if (!$user || !$user->password_reset_token_expiry || $user->password_reset_token_expiry < new \DateTime()) {
-            return false; // Invalid or expired token
+        // Invalid or expired token
+        if (
+            $user === null ||
+            $user->password_reset_token_expiry === null ||
+            $user->password_reset_token_expiry < FrozenTime::now()
+        ) {
+            return false;
         }
 
         $user->password = $newPassword;
         $user->password_reset_token = null;
         $user->password_reset_token_expiry = null;
 
-        return (bool)$this->save($user);
+        try {
+            $this->saveOrFail($user);
+
+            return true;
+        } catch (Exception $e) {
+            Log::error('Failed to reset password for user ' . $user->id . ': ' . $e->getMessage());
+
+            return false;
+        }
     }
 }

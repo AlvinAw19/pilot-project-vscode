@@ -1,7 +1,7 @@
 <?php
 /**
  * the User profile template is generated using copilot.
- * 
+ *
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\User $user
  * @var bool $hasPassword

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Mailer;
 
 use Cake\Mailer\Mailer;
+use Cake\Routing\Router;
 
 /**
  * User Mailer
@@ -17,18 +18,18 @@ class UserMailer extends Mailer
      * @param string $token Reset token
      * @return void
      */
-    public function passwordResetEmail(string $email, string $token)
+    public function passwordResetEmail(string $email, string $token): void
     {
-        $resetUrl = \Cake\Routing\Router::url([
+        $resetUrl = Router::url([
             'controller' => 'Users',
             'action' => 'resetPassword',
-            $token
+            $token,
         ], true);
 
         $this
             ->setTo($email)
             ->setSubject('Password Reset Request')
-            ->setEmailFormat('html')
+            ->setEmailFormat('both')
             ->viewBuilder()
             ->setTemplate('password_reset')
             ->setLayout('default')

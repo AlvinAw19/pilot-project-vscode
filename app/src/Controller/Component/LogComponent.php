@@ -9,7 +9,7 @@ use Cake\Controller\Component;
 /**
  * Log component
  *
- * Logs admin user actions to session storage
+ * Logs admin user actions to database
  */
 class LogComponent extends Component
 {
@@ -31,28 +31,27 @@ class LogComponent extends Component
             return;
         }
 
-        $logs = $request->getSession()->read('AdminLogs') ?? [];
-
-        $logs[] = [
-            'admin_user_id' => $identity->id,
-            'admin_username' => $identity->name,
-            'controller' => $request->getParam('controller'),
-            'action' => $request->getParam('action'),
-            'prefix' => $request->getParam('prefix'),
+        $logTable = $controller->fetchTable('Logs');
+        $log = $logTable->newEntity([
+            'user_id' => $identity->id,
             'url' => $request->getRequestTarget(),
-            'timestamp' => date('Y-m-d H:i:s'),
-        ];
+            'ip_address' => $request->clientIp(),
+        ]);
 
-        $request->getSession()->write('AdminLogs', $logs);
+        $logTable->save($log);
     }
 
     /**
-     * Get all admin logs from session
+     * Get all logs from database
      *
-     * @return array<array<string, mixed>>
+     * @return \Cake\ORM\Query
      */
-    public function getLogs(): array
+    public function getLogs()
     {
-        return $this->getController()->getRequest()->getSession()->read('AdminLogs');
+        return $this->getController()
+            ->fetchTable('Logs')
+            ->find()
+            ->contain(['Users'])
+            ->orderDesc('Logs.created');
     }
 }

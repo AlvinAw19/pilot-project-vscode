@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
-use App\Model\Entity\OrderItem;
+use App\Enum\DeliveryStatus;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -81,12 +81,7 @@ class OrderItemsTable extends Table
             ->scalar('delivery_status')
             ->maxLength('delivery_status', 50)
             ->notEmptyString('delivery_status')
-            ->inList('delivery_status', [
-                OrderItem::STATUS_PENDING,
-                OrderItem::STATUS_DELIVERING,
-                OrderItem::STATUS_DELIVERED,
-                OrderItem::STATUS_CANCELED,
-            ]);
+            ->inList('delivery_status', array_keys(DeliveryStatus::options()));
 
         return $validator;
     }

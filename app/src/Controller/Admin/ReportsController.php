@@ -5,11 +5,10 @@ namespace App\Controller\Admin;
 
 use App\Controller\AppController;
 use App\Model\Entity\User;
+use Cake\Http\Response;
 use Cake\I18n\FrozenTime;
 
 /**
- * Reports Controller
- *
  * Dashboard and reporting for Admin users.
  *
  * @property \App\Model\Table\OrdersTable $Orders
@@ -37,14 +36,12 @@ class ReportsController extends AppController
     }
 
     /**
-     * Index method - Admin Dashboard
-     *
      * Displays platform-wide metrics, revenue trends, user growth,
      * top sellers, and system health indicators.
      *
-     * @return \Cake\Http\Response|null|void Renders view
+     * @return \Cake\Http\Response Renders view
      */
-    public function index()
+    public function index(): Response
     {
         $identity = $this->request->getAttribute('identity');
         $user = $this->Users->get($identity->getIdentifier());
@@ -74,9 +71,7 @@ class ReportsController extends AppController
         // Recent Orders (Last 10)
         $recentOrders = $this->getRecentOrders(10);
 
-        $title = __('Admin Dashboard');
         $this->set(compact(
-            'title',
             'summaryCards',
             'revenueOverTime',
             'ordersOverTime',
@@ -86,6 +81,8 @@ class ReportsController extends AppController
             'systemHealth',
             'recentOrders'
         ));
+
+        return $this->render();
     }
 
     /**
@@ -96,18 +93,11 @@ class ReportsController extends AppController
     private function getSummaryCards(): array
     {
         // Total Revenue
-        /** @var \Cake\Datasource\EntityInterface|null $totalRevenueResult */
-        $totalRevenueResult = $this->Orders->find()
+        /** @var \App\Model\Entity\Order $totalRevenue */
+        $totalRevenue = $this->Orders->find()
             ->select(['total' => $this->Orders->find()->func()->sum('total_amount')])
             ->first();
-        
-        $totalRevenue = 0;
-        if ($totalRevenueResult instanceof \Cake\Datasource\EntityInterface) {
-            $total = $totalRevenueResult->get('total');
-            if ($total) {
-                $totalRevenue = (float)$total;
-            }
-        }
+        $totalRevenue = $totalRevenue->get('total');
 
         // Total Orders
         $totalOrders = $this->Orders->find()->count();
@@ -128,6 +118,10 @@ class ReportsController extends AppController
             ->where(['role' => User::ROLE_BUYER])
             ->count();
 
+        $totalAdmins = $this->Users->find()
+            ->where(['role' => User::ROLE_ADMIN])
+            ->count();
+
         return [
             'totalRevenue' => $totalRevenue,
             'totalOrders' => $totalOrders,
@@ -135,6 +129,7 @@ class ReportsController extends AppController
             'totalProducts' => $totalProducts,
             'totalSellers' => $totalSellers,
             'totalBuyers' => $totalBuyers,
+            'totalAdmins' => $totalAdmins,
         ];
     }
 
@@ -158,6 +153,7 @@ class ReportsController extends AppController
             ->order(['DATE(created)' => 'ASC'])
             ->toArray();
 
+        // Initialize chart data
         $labels = [];
         $data = [];
 
@@ -192,6 +188,7 @@ class ReportsController extends AppController
             ->order(['DATE(created)' => 'ASC'])
             ->toArray();
 
+        // Initialize chart data
         $labels = [];
         $data = [];
 
@@ -226,6 +223,7 @@ class ReportsController extends AppController
             ->order(['DATE(created)' => 'ASC'])
             ->toArray();
 
+        // Initialize chart data
         $labels = [];
         $data = [];
 
@@ -257,7 +255,7 @@ class ReportsController extends AppController
                 'total_revenue' => $this->OrderItems->find()->func()->sum('OrderItems.amount'),
                 'total_orders' => $this->OrderItems->find()->func()->count('DISTINCT OrderItems.order_id'),
             ])
-            ->group(['Users.id', 'Users.name'])
+            ->group(['Users.id'])
             ->order(['total_revenue' => 'DESC'])
             ->limit($limit)
             ->toArray();
@@ -280,8 +278,23 @@ class ReportsController extends AppController
                 'total_revenue' => $this->OrderItems->find()->func()->sum('OrderItems.amount'),
                 'items_sold' => $this->OrderItems->find()->func()->sum('OrderItems.quantity'),
             ])
-            ->group(['Categories.id', 'Categories.name'])
+            ->group(['Categories.id'])
             ->order(['total_revenue' => 'DESC'])
+            ->limit($limit)
+            ->toArray();
+    }
+
+    /**
+     * Get recent orders
+     *
+     * @param int $limit Number of orders to return
+     * @return array<\App\Model\Entity\Order>
+     */
+    private function getRecentOrders(int $limit): array
+    {
+        return $this->Orders->find()
+            ->contain(['Users', 'Payments'])
+            ->order(['Orders.created' => 'DESC'])
             ->limit($limit)
             ->toArray();
     }
@@ -310,7 +323,7 @@ class ReportsController extends AppController
         $inactiveSellers = $this->Users->find()
             ->where([
                 'role' => User::ROLE_SELLER,
-                'id NOT IN' => !empty($sellersWithProducts) ? $sellersWithProducts : [0],
+                'id NOT IN' => $sellersWithProducts,
             ])
             ->count();
 
@@ -337,20 +350,5 @@ class ReportsController extends AppController
             'newUsersToday' => $newUsersToday,
             'ordersToday' => $ordersToday,
         ];
-    }
-
-    /**
-     * Get recent orders
-     *
-     * @param int $limit Number of orders to return
-     * @return array<\App\Model\Entity\Order>
-     */
-    private function getRecentOrders(int $limit): array
-    {
-        return $this->Orders->find()
-            ->contain(['Users', 'Payments'])
-            ->order(['Orders.created' => 'DESC'])
-            ->limit($limit)
-            ->toArray();
     }
 }

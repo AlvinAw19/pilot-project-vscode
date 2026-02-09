@@ -4,13 +4,13 @@ declare(strict_types=1);
 namespace App\Controller\Seller;
 
 use App\Controller\AppController;
+use Cake\Http\Response;
 use Cake\I18n\FrozenTime;
 
 /**
- * Reports Controller
- *
  * Dashboard and reporting for Seller users.
  *
+ * @property \App\Model\Table\UsersTable $Users
  * @property \App\Model\Table\OrdersTable $Orders
  * @property \App\Model\Table\OrderItemsTable $OrderItems
  * @property \App\Model\Table\ProductsTable $Products
@@ -26,22 +26,23 @@ class ReportsController extends AppController
     public function initialize(): void
     {
         parent::initialize();
+        $this->loadModel('Users');
         $this->loadModel('Orders');
         $this->loadModel('OrderItems');
         $this->loadModel('Products');
     }
 
     /**
-     * Index method - Seller Dashboard
-     *
      * Displays sales performance, best-selling products, recent orders,
      * and low stock alerts for the current seller.
      *
-     * @return \Cake\Http\Response|null|void Renders view
+     * @return \Cake\Http\Response Renders view
      */
-    public function index()
+    public function index(): Response
     {
-        $this->Authorization->skipAuthorization();
+        $identity = $this->request->getAttribute('identity');
+        $user = $this->Users->get($identity->getIdentifier());
+        $this->Authorization->authorize($user, 'SellerIndex');
 
         $identity = $this->request->getAttribute('identity');
         $sellerId = $identity->getIdentifier();
@@ -64,9 +65,7 @@ class ReportsController extends AppController
         // Pending Orders Count
         $pendingOrdersCount = $this->getPendingOrdersCount($sellerId);
 
-        $title = __('Seller Dashboard');
         $this->set(compact(
-            'title',
             'summaryCards',
             'salesOverTime',
             'bestSellingProducts',
@@ -74,6 +73,8 @@ class ReportsController extends AppController
             'lowStockProducts',
             'pendingOrdersCount'
         ));
+
+        return $this->render();
     }
 
     /**
@@ -89,13 +90,14 @@ class ReportsController extends AppController
             ->where(['seller_id' => $sellerId])
             ->count();
 
+        /** @var \App\Model\Entity\OrderItem $totalSalesResult */
         // Total Sales (sum of order items for this seller's products)
         $totalSalesResult = $this->OrderItems->find()
             ->contain(['Products'])
             ->where(['Products.seller_id' => $sellerId])
             ->select(['total_sales' => $this->OrderItems->find()->func()->sum('OrderItems.amount')])
             ->first();
-        $totalSales = $totalSalesResult ? (float)$totalSalesResult->get('total_sales') : 0;
+        $totalSales = (float)$totalSalesResult->get('total_sales');
 
         // Total Orders (distinct orders containing this seller's products)
         $totalOrders = $this->OrderItems->find()
@@ -105,13 +107,14 @@ class ReportsController extends AppController
             ->distinct(['order_id'])
             ->count();
 
+        /** @var \App\Model\Entity\OrderItem $itemsSoldResult */
         // Items Sold
         $itemsSoldResult = $this->OrderItems->find()
             ->contain(['Products'])
             ->where(['Products.seller_id' => $sellerId])
             ->select(['items_sold' => $this->OrderItems->find()->func()->sum('OrderItems.quantity')])
             ->first();
-        $itemsSold = $itemsSoldResult ? (int)$itemsSoldResult->get('items_sold') : 0;
+        $itemsSold = (int)$itemsSoldResult->get('items_sold');
 
         return [
             'totalProducts' => $totalProducts,

@@ -3,6 +3,7 @@
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\CartItem[] $cartItems
  * @var float $totalAmount
+ * @var array $paymentTypeOptions
  */
 ?>
 <div class="orders form content">
@@ -44,11 +45,7 @@
     <?= $this->Form->create() ?>
     <?= $this->Form->radio(
         'payment_type',
-        [
-            'QR Payment' => '<small>QR Payment – Scan QR code to pay</small>',
-            'Credit Card' => '<small>Credit Card – Pay with credit/debit card</small>',
-            'Cash on Delivery' => '<small>Cash on Delivery – Pay when you receive</small>',
-        ],
+        $paymentTypeOptions,
         [
             'escape' => false,
             'separator' => '<br>',

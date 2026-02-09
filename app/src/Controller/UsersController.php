@@ -7,9 +7,13 @@ use App\Form\ForgotPasswordForm;
 use App\Form\ResetPasswordForm;
 use App\Mailer\UserMailer;
 use App\Model\Entity\User;
-use Cake\Event\EventInterface;
 use Cake\Core\Configure;
+use Cake\Event\EventInterface;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
+use Exception;
 use League\OAuth2\Client\Provider\Google;
+use League\OAuth2\Client\Provider\GoogleUser;
 
 /**
  * Users Controller
@@ -34,7 +38,8 @@ class UsersController extends AppController
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
-        $this->Authentication->addUnauthenticatedActions(['login', 'register', 'forgotPassword', 'resetPassword', 'googleLogin', 'googleCallback']);
+        $this->Authentication->addUnauthenticatedActions(['login', 'register',
+            'forgotPassword', 'resetPassword', 'googleLogin', 'googleCallback']);
     }
 
     /**
@@ -49,15 +54,6 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             $user->role = 'buyer';
-            // Require password and address for non-OAuth registration
-            if (empty($user->google_id)) {
-                if (empty($user->password)) {
-                    $user->setError('password', __('Password is required for registration.'));
-                }
-                if (empty($user->address)) {
-                    $user->setError('address', __('Address is required for registration.'));
-                }
-            }
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('The user has been saved.'));
 
@@ -86,10 +82,10 @@ class UsersController extends AppController
             if ($identity) {
                 switch ($identity->get('role')) {
                     case User::ROLE_ADMIN:
-                        return $this->redirect(['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'index']);
+                        return $this->redirect(['prefix' => 'Admin', 'controller' => 'Reports', 'action' => 'index']);
 
                     case User::ROLE_SELLER:
-                        return $this->redirect(['prefix' => 'Seller', 'controller' => 'Products', 'action' => 'index']);
+                        return $this->redirect(['prefix' => 'Seller', 'controller' => 'Reports', 'action' => 'index']);
 
                     case User::ROLE_BUYER:
                         return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
@@ -98,17 +94,6 @@ class UsersController extends AppController
 
             // Guest fallback
             return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
-        }
-        // Check if user is trying to login with email/password but has no password (OAuth user)
-        if ($this->request->is('post')) {
-            $email = $this->request->getData('email');
-            if ($email) {
-                $user = $this->Users->find()->where(['email' => $email])->first();
-                if ($user && $user->password === null) {
-                    $this->Flash->error(__('This account uses Google login. Please use the "Login with Google" button.'));
-                    return null;
-                }
-            }
         }
         // display error if user submitted and authentication failed
         if ($this->request->is('post') && ($result === null || !$result->isValid())) {
@@ -121,9 +106,9 @@ class UsersController extends AppController
     /**
      * Forgot Password method
      *
-     * @return \Cake\Http\Response|null|void Renders view
+     * @return \Cake\Http\Response|null Renders view
      */
-    public function forgotPassword()
+    public function forgotPassword(): ?Response
     {
         $this->Authorization->skipAuthorization();
         $form = new ForgotPasswordForm();
@@ -134,30 +119,33 @@ class UsersController extends AppController
                 if ($token) {
                     $mailer = new UserMailer();
                     $mailer->passwordResetEmail($email, $token);
-                    $this->Flash->success(__('If the email exists, a reset link has been sent.'));
+                    $this->Flash->success(__('A reset link has been sent to your email.'));
                 } else {
-                    $this->Flash->success(__('If the email exists, a reset link has been sent.'));
+                    $this->Flash->error(__('No account found with that email address. Please check and try again.'));
                 }
+
                 return $this->redirect(['action' => 'login']);
             } else {
                 $this->Flash->error(__('Please enter a valid email.'));
             }
         }
-        $this->set('form', $form);
+        $this->set(compact('form'));
+
+        return null;
     }
 
     /**
      * Reset Password method
      *
      * @param string|null $token Reset token
-     * @return \Cake\Http\Response|null|void Renders view
+     * @return \Cake\Http\Response|null Renders view
      * @throws \Cake\Http\Exception\NotFoundException
      */
-    public function resetPassword(?string $token = null)
+    public function resetPassword(?string $token = null): ?Response
     {
         $this->Authorization->skipAuthorization();
         if (!$token) {
-            throw new \Cake\Http\Exception\NotFoundException();
+            throw new NotFoundException();
         }
 
         $form = new ResetPasswordForm();
@@ -166,6 +154,7 @@ class UsersController extends AppController
                 $newPassword = $this->request->getData('password');
                 if ($this->Users->resetPassword($token, $newPassword)) {
                     $this->Flash->success(__('Password has been reset. Please log in.'));
+
                     return $this->redirect(['action' => 'login']);
                 } else {
                     $this->Flash->error(__('Invalid or expired token.'));
@@ -175,6 +164,8 @@ class UsersController extends AppController
             }
         }
         $this->set(compact('form', 'token'));
+
+        return null;
     }
 
     /**
@@ -189,8 +180,8 @@ class UsersController extends AppController
      */
     public function logout()
     {
-        $this->Authentication->logout();
         $this->Authorization->skipAuthorization();
+        $this->Authentication->logout();
 
         return $this->redirect(['controller' => 'Users', 'action' => 'login']);
     }
@@ -200,15 +191,18 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null Redirects to Google OAuth consent screen.
      */
-    public function googleLogin()
+    public function googleLogin(): ?Response
     {
         $this->Authorization->skipAuthorization();
+
+        // Create Google OAuth provider instance with config from app_local.php
         $provider = new Google([
             'clientId' => Configure::read('GoogleOAuth.clientId'),
             'clientSecret' => Configure::read('GoogleOAuth.clientSecret'),
             'redirectUri' => Configure::read('GoogleOAuth.redirectUri'),
         ]);
 
+        // Generate consent URL for user to select account then redirect user to Google OAuth page
         $authUrl = $provider->getAuthorizationUrl(['prompt' => 'select_account']);
         $this->request->getSession()->write('oauth2state', $provider->getState());
 
@@ -220,14 +214,18 @@ class UsersController extends AppController
      *
      * @return \Cake\Http\Response|null Redirects based on login result.
      */
-    public function googleCallback()
+    public function googleCallback(): ?Response
     {
         $this->Authorization->skipAuthorization();
+
+        // Check for OAuth errors and redirect to login page
         if ($this->request->getQuery('error')) {
             $this->Flash->error(__('Access denied'));
+
             return $this->redirect(['action' => 'login']);
         }
 
+        // Create new http request with same config from app_local
         $provider = new Google([
             'clientId' => Configure::read('GoogleOAuth.clientId'),
             'clientSecret' => Configure::read('GoogleOAuth.clientSecret'),
@@ -238,30 +236,40 @@ class UsersController extends AppController
         $expectedState = $session->read('oauth2state');
         $providedState = $this->request->getQuery('state');
 
+        // State validation
         if (empty($providedState) || ($providedState !== $expectedState)) {
             $session->delete('oauth2state');
             $this->Flash->error(__('Invalid state'));
+
             return $this->redirect(['action' => 'login']);
         }
 
         try {
+            // Exchange authorization code for access token
+            /** @var \League\OAuth2\Client\Token\AccessToken $token */
             $token = $provider->getAccessToken('authorization_code', [
-                'code' => $this->request->getQuery('code')
+                'code' => $this->request->getQuery('code'),
             ]);
 
+            // Get Google User's Profile
+            /** @var \League\OAuth2\Client\Provider\GoogleUser $googleUser */
             $googleUser = $provider->getResourceOwner($token);
 
+            // Call findOrCreateOAuthUser() to create/link user account
             $user = $this->findOrCreateOAuthUser($googleUser);
 
             if ($user) {
                 $this->Authentication->setIdentity($user);
+
                 return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
             } else {
                 $this->Flash->error(__('Unable to authenticate with Google.'));
+
                 return $this->redirect(['action' => 'login']);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->Flash->error(__('OAuth error: ') . $e->getMessage());
+
             return $this->redirect(['action' => 'login']);
         }
     }
@@ -272,34 +280,34 @@ class UsersController extends AppController
      * @param \League\OAuth2\Client\Provider\GoogleUser $googleUser The Google user object.
      * @return \App\Model\Entity\User|null The user entity or null on failure.
      */
-    private function findOrCreateOAuthUser($googleUser)
+    private function findOrCreateOAuthUser(GoogleUser $googleUser): ?User
     {
-        // Find user by google_id
+        // Case 1: User signup using google. Find user by google_id
+        /** @var \App\Model\Entity\User|null $existingUser */
         $existingUser = $this->Users->find()->where(['google_id' => $googleUser->getId()])->first();
 
         if ($existingUser) {
             return $existingUser;
         }
 
-        // Check if email exists
+        // Case 2: if user already signup locally and want to login using google. Find user by email
+        /** @var \App\Model\Entity\User|null $existingByEmail */
         $existingByEmail = $this->Users->find()->where(['email' => $googleUser->getEmail()])->first();
 
         if ($existingByEmail) {
-            if ($existingByEmail->google_id) {
+            // Link existing account to google
+            $existingByEmail->google_id = $googleUser->getId();
+            $existingByEmail->provider = 'google';
+            if ($this->Users->save($existingByEmail)) {
                 return $existingByEmail;
             } else {
-                // Link existing account
-                $existingByEmail->google_id = $googleUser->getId();
-                $existingByEmail->provider = 'google';
-                if ($this->Users->save($existingByEmail)) {
-                    return $existingByEmail;
-                } else {
-                    $this->Flash->error(__('Unable to link Google account. Please contact support.'));
-                    return null;
-                }
+                $this->Flash->error(__('Unable to link Google account. Please contact support.'));
+
+                return null;
             }
         } else {
             // Create new user
+            /** @var \App\Model\Entity\User $newUser */
             $newUser = $this->Users->newEntity([
                 'name' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
@@ -319,21 +327,18 @@ class UsersController extends AppController
                     $errorMessages[] = $field . ': ' . implode(', ', $fieldErrors);
                 }
                 $this->Flash->error(__('Unable to create user: ') . implode('; ', $errorMessages));
+
                 return null;
             }
         }
     }
 
     /**
-     * Profile method - View and edit current user's profile.
+     * View and edit current user profile.
      *
-     * Allows authenticated users to view and update their profile information
-     * including name, address, and password. Users who signed up via OAuth
-     * can set a local password here.
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful update, renders view otherwise.
+     * @return \Cake\Http\Response|null Renders view.
      */
-    public function profile()
+    public function profile(): ?Response
     {
         $identity = $this->request->getAttribute('identity');
         $userId = $identity->getIdentifier();
@@ -341,7 +346,7 @@ class UsersController extends AppController
         /** @var \App\Model\Entity\User $user */
         $user = $this->Users->get($userId);
 
-        $this->Authorization->authorize($user, 'profile');
+        $this->Authorization->authorize($user);
 
         // Determine if user has a password set (for OAuth users who may not have one)
         $hasPassword = $user->password !== null;
@@ -382,5 +387,7 @@ class UsersController extends AppController
         }
 
         $this->set(compact('user', 'hasPassword'));
+
+        return null;
     }
 }

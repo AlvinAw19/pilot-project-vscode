@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var \App\Model\Entity\OrderItem $orderItem
+ */
+?>
+
 Delivery Status Update
 ======================
 

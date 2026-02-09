@@ -9,24 +9,6 @@
         <h3 style="margin-right:auto;">
             <?= __('Order Management') ?>
         </h3>
-
-        <div style="display:flex; gap:10px;">
-            <?= $this->Html->link(
-                __('Users'),
-                ['controller' => 'Users', 'action' => 'index'],
-                ['class' => 'button']
-            ) ?>
-            <?= $this->Html->link(
-                __('Categories'),
-                ['controller' => 'Categories', 'action' => 'index'],
-                ['class' => 'button']
-            ) ?>
-            <?= $this->Html->link(
-                __('Products'),
-                ['controller' => 'Products', 'action' => 'index'],
-                ['class' => 'button']
-            ) ?>
-        </div>
     </div>
 
     <div class="table-responsive">

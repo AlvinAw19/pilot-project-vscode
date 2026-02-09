@@ -19,28 +19,28 @@
 
     <!-- Summary Cards -->
     <div class="dashboard-cards">
-        <div class="card summary-card">
+        <div class="card summary-card products">
             <div class="card-icon"></div>
             <div class="card-content">
                 <h3><?= __('Total Products') ?></h3>
                 <p class="card-value"><?= number_format($summaryCards['totalProducts']) ?></p>
             </div>
         </div>
-        <div class="card summary-card">
+        <div class="card summary-card sales">
             <div class="card-icon"></div>
             <div class="card-content">
                 <h3><?= __('Total Sales') ?></h3>
-                <p class="card-value">$<?= number_format($summaryCards['totalSales'], 2) ?></p>
+                <p class="card-value">RM<?= number_format($summaryCards['totalSales'], 2) ?></p>
             </div>
         </div>
-        <div class="card summary-card">
+        <div class="card summary-card orders">
             <div class="card-icon"></div>
             <div class="card-content">
                 <h3><?= __('Total Orders') ?></h3>
                 <p class="card-value"><?= number_format($summaryCards['totalOrders']) ?></p>
             </div>
         </div>
-        <div class="card summary-card">
+        <div class="card summary-card items">
             <div class="card-icon"></div>
             <div class="card-content">
                 <h3><?= __('Items Sold') ?></h3>
@@ -61,7 +61,7 @@
             <?php endif; ?>
 
             <?php if (!empty($lowStockProducts)): ?>
-                <div class="alert alert-danger">
+                <div class="alert alert-warning">
                     <strong> <?= __('Low Stock Alert') ?>:</strong>
                     <?= __('You have {0} product(s) with low stock (≤10 items).', count($lowStockProducts)) ?>
                 </div>
@@ -93,7 +93,7 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th><?= __('Order #') ?></th>
+                        <th><?= __('Order') ?></th>
                         <th><?= __('Buyer') ?></th>
                         <th><?= __('Items') ?></th>
                         <th><?= __('Amount') ?></th>
@@ -163,7 +163,7 @@
         data: {
             labels: <?= json_encode($salesOverTime['labels']) ?>,
             datasets: [{
-                label: '<?= __('Daily Sales ($)') ?>',
+                label: '<?= __('Daily Sales (RM)') ?>',
                 data: <?= json_encode($salesOverTime['data']) ?>,
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -174,16 +174,14 @@
         options: {
             responsive: true,
             plugins: {
-                legend: {
-                    position: 'top',
-                }
+                legend: { display: false }
             },
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return '$' + value.toLocaleString();
+                            return 'RM' + value.toLocaleString();
                         }
                     }
                 }
@@ -196,10 +194,10 @@
     new Chart(productsCtx, {
         type: 'bar',
         data: {
-            labels: <?= json_encode(array_map(function($p) { return $p->product_name ?? 'Unknown'; }, $bestSellingProducts)) ?>,
+            labels: <?= json_encode(array_map(function($productNameQuery) { return $productNameQuery->product_name; }, $bestSellingProducts)) ?>,
             datasets: [{
                 label: '<?= __('Units Sold') ?>',
-                data: <?= json_encode(array_map(function($p) { return (int)$p->total_quantity; }, $bestSellingProducts)) ?>,
+                data: <?= json_encode(array_map(function($productQuantityQuery) { return (int)$productQuantityQuery->total_quantity; }, $bestSellingProducts)) ?>,
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.7)',
                     'rgba(54, 162, 235, 0.7)',
@@ -239,20 +237,29 @@
 <style>
     .dashboard-cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
         margin-bottom: 2rem;
     }
 
     .summary-card {
         background: #fff;
         border-radius: 8px;
-        padding: 1.5rem;
+        padding: 1.25rem;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        gap: 1rem;
+        border-left: 4px solid #ddd;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .summary-card.products { border-left-color: #22c55e; }
+    .summary-card.sales { border-left-color: #3b82f6; }
+    .summary-card.orders { border-left-color: #a855f7; }
+    .summary-card.items { border-left-color: #f59e0b; }
 
     .card-icon {
         font-size: 2.5rem;
@@ -260,8 +267,11 @@
 
     .card-content h3 {
         margin: 0;
-        font-size: 0.9rem;
+        font-size: 1rem;
         color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
     }
 
     .card-value {
@@ -287,12 +297,6 @@
         color: #856404;
     }
 
-    .alert-danger {
-        background: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-    }
-
     .alert-link {
         margin-left: 1rem;
         color: inherit;
@@ -315,7 +319,7 @@
 
     .chart-container h3 {
         margin: 0 0 1rem;
-        font-size: 1.1rem;
+        font-size: 1.3rem;
         color: #333;
     }
 
@@ -334,7 +338,7 @@
 
     .table-container h3 {
         margin: 0 0 1rem;
-        font-size: 1.1rem;
+        font-size: 1.3rem;
         color: #333;
     }
 

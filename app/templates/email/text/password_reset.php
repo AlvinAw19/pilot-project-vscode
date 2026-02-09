@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var string $resetUrl The URL for password reset.
+ */
+?>
 Password Reset Request
 
 Hello,
@@ -11,4 +16,4 @@ If you did not request this, please ignore this email.
 This link will expire in 1 hour.
 
 Best regards,
-Your App Team
+Koalala Finds

@@ -4,12 +4,17 @@ declare(strict_types=1);
 namespace App\Controller\Buyer;
 
 use App\Controller\AppController;
+use App\Enum\PaymentType;
+use App\Mailer\OrderMailer;
 
 /**
  * CartItems Controller
  *
  * @property \App\Model\Table\CartItemsTable $CartItems
  * @property \App\Model\Table\ProductsTable $Products
+ * @property \App\Model\Table\OrdersTable $Orders
+ * @property \App\Model\Table\OrderItemsTable $OrderItems
+ * @property \App\Model\Table\PaymentsTable $Payments
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  * @method \App\Model\Entity\CartItem[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
@@ -25,6 +30,9 @@ class CartItemsController extends AppController
         parent::initialize();
         $this->loadModel('CartItems');
         $this->loadModel('Products');
+        $this->loadModel('Orders');
+        $this->loadModel('OrderItems');
+        $this->loadModel('Payments');
     }
 
     /**
@@ -174,6 +182,130 @@ class CartItemsController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Checkout method
+     *
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function checkout()
+    {
+        $order = $this->Orders->newEmptyEntity();
+        $this->Authorization->authorize($order);
+        $buyerId = $this->request->getAttribute('identity')->id;
+
+        // Get cart items for the current buyer
+        $cartItems = $this->CartItems->find()
+            ->where(['buyer_id' => $buyerId])
+            ->contain(['Products'])
+            ->all();
+
+        if ($cartItems->isEmpty()) {
+            $this->Flash->error(__('Your cart is empty.'));
+
+            return $this->redirect(['controller' => 'Catalogs', 'action' => 'index']);
+        }
+
+        // Calculate total amount and validate stock availability
+        $totalAmount = 0;
+        $unavailableItems = [];
+
+        foreach ($cartItems as $item) {
+            // Check if product still exists and has stock
+            if (!$item->product || $item->product->stock < $item->quantity) {
+                $unavailableItems[] = $item->product ? $item->product->name : __('Product no longer available');
+                $this->CartItems->delete($item);
+            } else {
+                $totalAmount += $item->product->price * $item->quantity;
+            }
+        }
+
+        // Remove unavailable items from cart
+        if (!empty($unavailableItems)) {
+            $this->Flash->error(__(
+                'Some items in your cart are no longer available: {0}',
+                implode(', ', $unavailableItems)
+            ));
+
+            return $this->redirect(['controller' => 'CartItems', 'action' => 'index']);
+        }
+
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+
+            // Start transaction
+            $this->Orders->getConnection()->begin();
+
+            try {
+                // Create order
+                $order = $this->Orders->newEntity([
+                    'buyer_id' => $buyerId,
+                    'total_amount' => $totalAmount,
+                ]);
+
+                $order = $this->Orders->saveOrFail($order);
+
+                // Create order items
+                $orderItems = [];
+                foreach ($cartItems as $cartItem) {
+                    $orderItems[] = $this->OrderItems->newEntity([
+                        'order_id' => $order->id,
+                        'product_id' => $cartItem->product_id,
+                        'price' => $cartItem->product->price,
+                        'quantity' => $cartItem->quantity,
+                        'amount' => $cartItem->product->price * $cartItem->quantity,
+                    ]);
+
+                    $product = $cartItem->product;
+                    $product->stock = $product->stock - $cartItem->quantity;
+                    $this->OrderItems->Products->saveOrFail($product);
+                }
+                $this->OrderItems->saveManyOrFail($orderItems);
+
+                // Create payment
+                $payment = $this->Payments->newEntity([
+                    'order_id' => $order->id,
+                    'payment_type' => $data['payment_type'],
+                ]);
+                $this->Payments->saveOrFail($payment);
+
+                // Clear cart
+                $this->CartItems->deleteManyOrFail($cartItems);
+
+                // Commit transaction
+                $this->Orders->getConnection()->commit();
+
+                // Reload order with associations for emails
+                $order = $this->Orders->get($order->id, ['contain' => [
+                    'Users',
+                    'OrderItems' => [
+                        'Products' => [
+                            'Users',
+                        ],
+                    ],
+                ]]);
+
+                // Send order confirmation to buyer
+                $mailer = new OrderMailer();
+                $mailer->orderConfirmation($order);
+
+                // Send notification to each seller
+                foreach ($order->order_items as $item) {
+                    $mailer->sellerNotification($item);
+                }
+
+                $this->Flash->success(__('Order completed successfully.'));
+
+                return $this->redirect(['controller' => 'Orders', 'action' => 'view', $order->id]);
+            } catch (\Exception $e) {
+                $this->Orders->getConnection()->rollback();
+                $this->Flash->error(__('Order could not be completed. Please try again.'));
+            }
+        }
+        $paymentTypeOptions = PaymentType::options();
+
+        $this->set(compact('cartItems', 'totalAmount', 'paymentTypeOptions'));
     }
 
     /**

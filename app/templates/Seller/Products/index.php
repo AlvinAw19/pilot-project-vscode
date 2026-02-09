@@ -12,11 +12,6 @@
 
         <div style="display:flex; gap:10px;">
             <?= $this->Html->link(
-                __('My Order'),
-                ['controller' => 'Orders', 'action' => 'index'],
-                ['class' => 'button']
-            ) ?>
-            <?= $this->Html->link(
                 __('New Product'),
                 ['action' => 'add'],
                 ['class' => 'button']

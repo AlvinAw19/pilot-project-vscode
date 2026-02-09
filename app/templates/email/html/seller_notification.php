@@ -1,3 +1,11 @@
+<?php
+/**
+ * The code of html template was generated using AI for better visualisation
+ *
+ * @var \App\Model\Entity\OrderItem $orderItem
+ */
+?>
+
 <!DOCTYPE html>
 <html>
 <head>

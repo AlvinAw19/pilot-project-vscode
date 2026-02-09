@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var \App\Model\Entity\OrderItem $orderItem
+ */
+?>
+
 New Order Received
 ==================
 

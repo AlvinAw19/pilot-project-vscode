@@ -10,11 +10,12 @@ use App\Controller\AppController;
  *
  * Admin action log reporting
  *
+ * @property \App\Model\Table\LogsTable $Logs
  * @property \App\Controller\Component\LogComponent $Log
  * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
  * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  */
-class LogController extends AppController
+class LogsController extends AppController
 {
     /**
      * Index method
@@ -25,15 +26,10 @@ class LogController extends AppController
      */
     public function index()
     {
-        $identity = $this->Authentication->getIdentity();
-        if ($identity === null) {
-            throw new \Authorization\Exception\ForbiddenException();
-        }
-        $user = $identity->getOriginalData();
-        $this->Authorization->authorize($user, 'viewLogs');
+        $log = $this->Logs->newEmptyEntity();
+        $this->Authorization->authorize($log);
 
-        $logs = $this->Log->getLogs();
-        $logs = array_reverse($logs);
+        $logs = $this->paginate($this->Log->getLogs());
 
         $this->set(compact('logs'));
     }

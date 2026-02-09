@@ -41,8 +41,16 @@ class OrdersController extends AppController
     public function view($id = null)
     {
         $order = $this->Orders->get($id, [
-            'contain' => ['Users', 'Payments', 'OrderItems' => ['Products' => ['Users']]],
-            ]);
+            'contain' => [
+                'Users',
+                'Payments',
+                'OrderItems' => [
+                    'Products' => [
+                        'Users',
+                    ],
+                ],
+            ],
+        ]);
         $this->Authorization->authorize($order);
 
         $this->set(compact('order'));

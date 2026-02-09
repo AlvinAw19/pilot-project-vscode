@@ -159,7 +159,7 @@
                         <tr>
                             <td>
                                 <?= $this->Html->link(
-                                    h($seller->user_name ?? __('N/A')),
+                                    h($seller->user_name),
                                     ['prefix' => 'Admin', 'controller' => 'Users', 'action' => 'view', $seller->user_id ?? 0]
                                 ) ?>
                             </td>
@@ -308,7 +308,7 @@
     new Chart(categoriesCtx, {
         type: 'doughnut',
         data: {
-            labels: <?= json_encode(array_map(function($c) { return $c->category_name ?? 'Unknown'; }, $topCategories)) ?>,
+            labels: <?= json_encode(array_map(function($c) { return $c->category_name; }, $topCategories)) ?>,
             datasets: [{
                 data: <?= json_encode(array_map(function($c) { return (float)$c->total_revenue; }, $topCategories)) ?>,
                 backgroundColor: [
@@ -372,7 +372,7 @@
 
     .card-content h3 {
         margin: 0;
-        font-size: 0.85rem;
+        font-size: 1rem;
         color: #666;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -380,8 +380,8 @@
     }
 
     .card-value {
-        margin: 0.25rem 0 0;
-        font-size: 1.75rem;
+        margin: 0.5rem 0 0;
+        font-size: 1.8rem;
         font-weight: 700;
         color: #333;
     }

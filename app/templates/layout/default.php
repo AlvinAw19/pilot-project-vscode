@@ -37,7 +37,7 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     <?php $identity = $this->request->getAttribute('identity'); ?>
     <nav class="top-nav">
         <div class="top-nav-title">
-            <a href="<?= $this->Url->build('/') ?>"><span>Koalala</span> Finds</a>
+            <a href="<?= $this->Url->build('/') ?>"><span>Koalala</span>Finds</a>
         </div>
         <div class="top-nav-links">
             <?= $this->Navigation->render($identity) ?>

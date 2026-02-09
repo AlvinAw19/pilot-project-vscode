@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var \App\Model\Entity\Order $order
+ */
+?>
+
 Order Confirmation
 ==================
 

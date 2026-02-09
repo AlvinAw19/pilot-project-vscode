@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Seller;
 
 use App\Controller\AppController;
+use App\Service\MinioService;
 
 /**
  * Products Controller
@@ -65,7 +66,22 @@ class ProductsController extends AppController
         $this->Authorization->authorize($product);
 
         if ($this->request->is('post')) {
-            $product = $this->Products->patchEntity($product, $this->request->getData());
+            $data = $this->request->getData();
+            $minioService = new MinioService();
+
+            if (!empty($data['image_link'])) {
+                $uploadedUrl = $minioService->uploadImage(
+                    $data['image_link'],
+                    'products'
+                );
+                if ($uploadedUrl) {
+                    $data['image_link'] = $uploadedUrl;
+                } else {
+                    unset($data['image_link']);
+                }
+            }
+
+            $product = $this->Products->patchEntity($product, $data);
             $product->seller_id = $this->request->getAttribute('identity')->id;
             if ($this->Products->save($product)) {
                 $this->Flash->success(__('The product has been saved.'));
@@ -95,7 +111,22 @@ class ProductsController extends AppController
         $this->Authorization->authorize($product);
 
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $product = $this->Products->patchEntity($product, $this->request->getData());
+            $data = $this->request->getData();
+            $minioService = new MinioService();
+
+            if (!empty($data['image_link'])) {
+                $uploadedUrl = $minioService->uploadImage(
+                    $data['image_link'],
+                    'products'
+                );
+                if ($uploadedUrl) {
+                    $data['image_link'] = $uploadedUrl;
+                } else {
+                    unset($data['image_link']);
+                }
+            }
+
+            $product = $this->Products->patchEntity($product, $data);
             if ($this->Products->save($product)) {
                 $this->Flash->success(__('The product has been saved.'));
 

@@ -88,7 +88,7 @@
         <br>
         <div class="cart-actions">
             <?= $this->Html->link(__('Continue Shopping'), ['controller' => 'Catalogs', 'action' => 'index', 'prefix' => false], ['class' => 'button']) ?>
-            <?= $this->Html->link(__('Proceed to Checkout'), ['controller' => 'Orders', 'action' => 'checkout'], ['class' => 'button']) ?>
+            <?= $this->Html->link(__('Proceed to Checkout'), ['controller' => 'CartItems', 'action' => 'checkout'], ['class' => 'button']) ?>
         </div>
 
     <?php else: ?>

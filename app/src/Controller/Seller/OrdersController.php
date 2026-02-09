@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller\Seller;
 
 use App\Controller\AppController;
+use App\Enum\DeliveryStatus;
 use App\Mailer\OrderMailer;
 
 /**
@@ -39,13 +40,24 @@ class OrdersController extends AppController
         $sellerId = $this->request->getAttribute('identity')->id;
 
         $query = $this->OrderItems->find()
-            ->contain(['Orders' => ['Users', 'Payments'], 'Products'])
-            ->where(['Products.seller_id' => $sellerId])
-            ->order(['OrderItems.created' => 'DESC']);
+            ->contain([
+                'Orders' => [
+                    'Users',
+                    'Payments',
+                ],
+                'Products',
+            ])
+            ->where([
+                'Products.seller_id' => $sellerId,
+            ])
+            ->order([
+                'OrderItems.created' => 'DESC',
+            ]);
 
         $orderItems = $this->paginate($query);
+        $deliveryStatusOptions = DeliveryStatus::options();
 
-        $this->set(compact('orderItems'));
+        $this->set(compact('orderItems', 'deliveryStatusOptions'));
     }
 
     /**
@@ -56,12 +68,11 @@ class OrdersController extends AppController
     public function updateStatus()
     {
         $this->request->allowMethod(['post']);
-        $this->Authorization->skipAuthorization();
 
-        $itemIds = $this->request->getData('item_ids');
+        $orderItemIds = $this->request->getData('order_item_ids');
         $newStatus = $this->request->getData('delivery_status');
 
-        if (empty($itemIds) || empty($newStatus)) {
+        if (empty($orderItemIds) || empty($newStatus)) {
             $this->Flash->error(__('Please select items and status to update.'));
 
             return $this->redirect(['action' => 'index']);
@@ -70,7 +81,7 @@ class OrdersController extends AppController
         // Get order items
         $orderItems = $this->OrderItems
             ->find()
-            ->where(['OrderItems.id IN' => $itemIds])
+            ->where(['OrderItems.id IN' => $orderItemIds])
             ->contain(['Products'])
             ->all();
 
@@ -83,9 +94,12 @@ class OrdersController extends AppController
                 $updatedCount++;
 
                 // Reload order item with associations for email
-                $orderItem = $this->OrderItems->get($orderItem->id, [
-                    'contain' => ['Orders' => ['Users'], 'Products'],
-                ]);
+                $orderItem = $this->OrderItems->get($orderItem->id, ['contain' => [
+                    'Orders' => [
+                        'Users',
+                    ],
+                    'Products',
+                ]]);
 
                 $mailer = new OrderMailer();
                 $mailer->deliveryStatusUpdate($orderItem);
