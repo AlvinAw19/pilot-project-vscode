@@ -50,6 +50,7 @@ class OrdersController extends AppController
                     'Products' => [
                         'Users',
                     ],
+                    'Reviews',
                 ],
                 'Payments',
             ],

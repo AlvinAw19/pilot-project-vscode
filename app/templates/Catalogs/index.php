@@ -106,6 +106,28 @@
                         <div class="product-info">
                             <h4 class="product-name"><?= h($product->name) ?></h4>
                             <p class="product-price">RM<?= $this->Number->format($product->price, ['places' => 2]) ?></p>
+                            <?php if (!empty($product->reviews)): ?>
+                                <?php
+                                    $count = count($product->reviews);
+                                    $avg = round(array_sum(array_column($product->reviews, 'rating')) / $count, 1);
+                                ?>
+                                <div class="product-rating">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <?php if ($i <= floor($avg)): ?>
+                                            <span class="star filled">&#9733;</span>
+                                        <?php elseif ($i - $avg < 1 && $i - $avg > 0): ?>
+                                            <span class="star half">&#9733;</span>
+                                        <?php else: ?>
+                                            <span class="star empty">&#9733;</span>
+                                        <?php endif; ?>
+                                    <?php endfor; ?>
+                                    <span class="rating-text"><?= $avg ?> (<?= $count ?>)</span>
+                                </div>
+                            <?php else: ?>
+                                <div class="product-rating">
+                                    <span class="rating-text no-reviews"><?= __('No reviews yet') ?></span>
+                                </div>
+                            <?php endif; ?>
                             <p class="product-stock"><?= __('In Stock: {0}', $product->stock) ?></p>
                         </div>
                     </a>
@@ -222,6 +244,43 @@
     .btn-view:hover {
         background: #666;
         color: white;
+    }
+
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+        margin: 0.25rem 0;
+    }
+
+    .product-rating .star {
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    .product-rating .star.filled {
+        color: #f5a623;
+    }
+
+    .product-rating .star.half {
+        color: #f5a623;
+        opacity: 0.6;
+    }
+
+    .product-rating .star.empty {
+        color: #ddd;
+    }
+
+    .product-rating .rating-text {
+        font-size: 0.8rem;
+        color: #666;
+        margin-left: 0.25rem;
+    }
+
+    .product-rating .rating-text.no-reviews {
+        font-size: 0.8rem;
+        color: #999;
+        font-style: italic;
     }
 </style>
 

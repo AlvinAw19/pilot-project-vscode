@@ -58,5 +58,18 @@ services:
     # Since the volume is per container, leave it running.
     tty: true
 
+  minio:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: "AKIAEXAMPLEEXAMPLEEX"
+      MINIO_ROOT_PASSWORD: "EXAMPLESECRETKEY/EXAMPLESECRETKEY/EXAMPL"
+    command: server /data --console-address ":9001"
+    ports:
+      - "9005:9000"
+      - "9004:9001"
+    volumes:
+      - minio-data:/data
+
 volumes:
   mysql-data:
+  minio-data:

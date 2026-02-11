@@ -28,7 +28,7 @@ class MinioService
      */
     public function __construct()
     {
-        $config = Configure::read('Minio');
+        $config = Configure::read('MinIO');
         $this->bucket = $config['bucket'];
 
         $this->client = new S3Client([
@@ -66,7 +66,7 @@ class MinioService
             'ACL' => 'public-read',
         ]);
 
-        return 'http://localhost:9000/' . $this->bucket . '/' . $path;
+        return 'http://localhost:9005/' . $this->bucket . '/' . $path;
     }
 
     /**

@@ -52,6 +52,7 @@ class UsersTable extends Table
         $this->hasMany('Products');
         $this->hasMany('CartItems', ['foreignKey' => 'buyer_id']);
         $this->hasMany('Orders', ['foreignKey' => 'buyer_id']);
+        $this->hasMany('Reviews', ['foreignKey' => 'user_id']);
         $this->hasMany('Logs', ['foreignKey' => 'user_id']);
     }
 

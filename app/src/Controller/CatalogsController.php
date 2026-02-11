@@ -27,6 +27,7 @@ class CatalogsController extends AppController
         parent::initialize();
         $this->loadModel('Products');
         $this->loadModel('Categories');
+        $this->loadModel('Reviews');
 
         // Skip authorization for all actions in this public controller
         $this->Authorization->skipAuthorization();
@@ -65,7 +66,7 @@ class CatalogsController extends AppController
         $query = $this->Products
             ->find('search', ['search' => $this->request->getQueryParams()])
             ->find('activeProduct')
-            ->contain(['Categories'])
+            ->contain(['Categories', 'Reviews'])
             ->order(['Products.created' => 'DESC']);
 
         $products = $this->paginate($query);
@@ -99,6 +100,24 @@ class CatalogsController extends AppController
             ->contain(['Categories', 'Users'])
             ->firstOrFail();
 
-        $this->set(compact('product'));
+        // Load reviews for this product
+        $reviews = $this->Reviews->find()
+            ->where(['Reviews.product_id' => $product->id])
+            ->contain(['Users'])
+            ->order(['Reviews.created' => 'DESC'])
+            ->all();
+
+        // Calculate average rating
+        $avgRating = null;
+        $reviewCount = $reviews->count();
+        if ($reviewCount > 0) {
+            $totalRating = 0;
+            foreach ($reviews as $review) {
+                $totalRating += $review->rating;
+            }
+            $avgRating = round($totalRating / $reviewCount, 1);
+        }
+
+        $this->set(compact('product', 'reviews', 'avgRating', 'reviewCount'));
     }
 }

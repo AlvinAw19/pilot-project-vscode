@@ -46,6 +46,7 @@
                     <th>Quantity</th>
                     <th>Subtotal</th>
                     <th>Delivery Status</th>
+                    <th>Review</th>
                 </tr>
 
                 <?php foreach ($order->order_items as $item) : ?>
@@ -62,6 +63,21 @@
                             ) ?>
                         </td>
                         <td><?= h($item->delivery_status) ?></td>
+                        <td>
+                            <?php if (!empty($item->review)): ?>
+                                <?= $this->Html->link(
+                                    __('Edit Review'),
+                                    ['controller' => 'Reviews', 'action' => 'edit', $item->id],
+                                    ['class' => 'button button-small']
+                                ) ?>
+                            <?php else: ?>
+                                <?= $this->Html->link(
+                                    __('Leave Review'),
+                                    ['controller' => 'Reviews', 'action' => 'add', $item->id],
+                                    ['class' => 'button button-small']
+                                ) ?>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </table>

@@ -54,6 +54,9 @@ class OrderItemsTable extends Table
             'foreignKey' => 'product_id',
             'joinType' => 'INNER',
         ]);
+        $this->hasOne('Reviews', [
+            'foreignKey' => 'order_item_id',
+        ]);
     }
 
     /**
