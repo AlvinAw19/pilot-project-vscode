@@ -3,83 +3,122 @@ declare(strict_types=1);
 
 namespace App\Policy;
 
-use Authorization\IdentityInterface;
 use App\Model\Entity\User;
+use Authorization\IdentityInterface;
 
 /**
- * User Policy
- *
- * Defines authorization rules for User entities.
+ * User policy
  */
 class UserPolicy
 {
     /**
-     * Check if the identity can add a user.
+     * Check if $user can index category
      *
-     * @param \Authorization\IdentityInterface $identity The user identity.
-     * @param \App\Model\Entity\User|null $user The user entity.
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
      */
-    public function canAdd(IdentityInterface $identity, ?User $user): bool
+    public function canIndex(IdentityInterface $user)
     {
-        return $this->isAdmin($identity);
+        return $this->isAdmin($user);
     }
 
     /**
-     * Check if the identity can edit a user.
+     * Check if $user can index admin dashboard
      *
-     * @param \Authorization\IdentityInterface $identity The user identity.
-     * @param \App\Model\Entity\User $user The user entity.
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
      */
-    public function canEdit(IdentityInterface $identity, User $user): bool
+    public function canAdminIndex(IdentityInterface $user)
     {
-        return $this->isAdmin($identity);
+        return $this->isAdmin($user);
     }
 
     /**
-     * Check if the identity can delete a user.
+     * Check if $user can index seller dashboard
      *
-     * @param \Authorization\IdentityInterface $identity The user identity.
-     * @param \App\Model\Entity\User $user The user entity.
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
      */
-    public function canDelete(IdentityInterface $identity, User $user): bool
+    public function canSellerIndex(IdentityInterface $user)
     {
-        return $this->isAdmin($identity);
+        return $this->isSeller($user);
     }
 
     /**
-     * Check if the identity can index/list users.
+     * Check if $user can add User
      *
-     * @param \Authorization\IdentityInterface $identity The user identity.
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
      */
-    public function canIndex(IdentityInterface $identity): bool
+    public function canAdd(IdentityInterface $user)
     {
-        return $this->isAdmin($identity);
+        return $this->isAdmin($user);
     }
 
     /**
-     * Check if the identity can view a user.
+     * Check if $user can edit User
      *
-     * @param \Authorization\IdentityInterface $identity The user identity.
-     * @param \App\Model\Entity\User $user The user entity.
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
      */
-    public function canView(IdentityInterface $identity, User $user): bool
+    public function canEdit(IdentityInterface $user)
     {
-        return $this->isAdmin($identity);
+        return $this->isAdmin($user);
     }
 
     /**
-     * Check if the identity is an admin.
+     * Check if $user can delete User
      *
-     * @param \Authorization\IdentityInterface $identity The user identity.
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
      * @return bool
      */
-    private function isAdmin(IdentityInterface $identity): bool
+    public function canDelete(IdentityInterface $user)
     {
-        return $identity->get('role') === 'admin';
+        return $this->isAdmin($user);
+    }
+
+    /**
+     * Check if $user can delete User
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @param \App\Model\Entity\User $profile The profile being accessed.
+     * @return bool
+     */
+    public function canProfile(IdentityInterface $user, User $profile): bool
+    {
+        return $user->id === $profile->id;
+    }
+
+    /**
+     * Check if $user can view User
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    public function canView(IdentityInterface $user)
+    {
+        return $this->isAdmin($user);
+    }
+
+    /**
+     * Check if the user is an admin
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    private function isAdmin(IdentityInterface $user)
+    {
+        return $user->role === User::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if the user is a seller
+     *
+     * @param \Authorization\IdentityInterface&\App\Model\Entity\User $user The user.
+     * @return bool
+     */
+    private function isSeller(IdentityInterface $user)
+    {
+        return $user->role === User::ROLE_SELLER;
     }
 }

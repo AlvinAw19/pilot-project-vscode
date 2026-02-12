@@ -5,8 +5,19 @@
  */
 ?>
 <div class="categories index content">
-    <?= $this->Html->link(__('New Category'), ['action' => 'add'], ['class' => 'button float-right']) ?>
-    <h3><?= __('Categories') ?></h3>
+    <div style="display:flex; align-items:center;">
+        <h3 style="margin-right:auto;">
+            <?= __('Categories') ?>
+        </h3>
+
+        <div style="display:flex; gap:10px;">
+            <?= $this->Html->link(
+                __('New Category'),
+                ['action' => 'add'],
+                ['class' => 'button']
+            ) ?>
+        </div>
+    </div>
     <div class="table-responsive">
         <table>
             <thead>
@@ -30,7 +41,7 @@
                         <td class="actions">
                             <?= $this->Html->link(__('View'), ['action' => 'view', $category->slug]) ?>
                             <?= $this->Html->link(__('Edit'), ['action' => 'edit', $category->slug]) ?>
-                            <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $category->id], ['confirm' => __('Are you sure you want to delete # {0}?', $category->id)]) ?>
+                            <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $category->slug], ['confirm' => __('Are you sure you want to delete # {0}?', $category->id)]) ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

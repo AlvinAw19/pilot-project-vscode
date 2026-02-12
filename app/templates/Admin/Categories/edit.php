@@ -22,6 +22,7 @@
             <fieldset>
                 <legend><?= __('Edit Category') ?></legend>
                 <?= $this->Form->control('name') ?>
+                <?= $this->Form->control('slug') ?>
             </fieldset>
             <?= $this->Form->button(__('Submit')) ?>
             <?= $this->Form->end() ?>

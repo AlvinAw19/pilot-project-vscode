@@ -5,8 +5,19 @@
  */
 ?>
 <div class="users index content">
-    <?= $this->Html->link(__('New User'), ['action' => 'add'], ['class' => 'button float-right']) ?>
-    <h3><?= __('Users') ?></h3>
+    <div style="display:flex; align-items:center;">
+        <h3 style="margin-right:auto;">
+            <?= __('Users') ?>
+        </h3>
+
+        <div style="display:flex; gap:10px;">
+            <?= $this->Html->link(
+                __('New User'),
+                ['action' => 'add'],
+                ['class' => 'button']
+            ) ?>
+        </div>
+    </div>
     <div class="table-responsive">
         <table>
             <thead>

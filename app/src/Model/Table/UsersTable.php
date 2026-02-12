@@ -3,13 +3,20 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\I18n\FrozenTime;
+use Cake\Log\Log;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Exception;
 
 /**
  * Users Model
  *
+ * @property \App\Model\Table\ProductsTable&\Cake\ORM\Association\HasMany $Products
+ * @property \App\Model\Table\CartItemsTable&\Cake\ORM\Association\HasMany $CartItems
+ * @property \App\Model\Table\OrderItemsTable&\Cake\ORM\Association\HasMany $OrderItems
+ * @property \App\Model\Table\LogsTable&\Cake\ORM\Association\HasMany $Logs
  * @method \App\Model\Entity\User newEmptyEntity()
  * @method \App\Model\Entity\User newEntity(array $data, array $options = [])
  * @method \App\Model\Entity\User[] newEntities(array $data, array $options = [])
@@ -41,6 +48,12 @@ class UsersTable extends Table
         $this->setPrimaryKey('id');
         $this->addBehavior('Timestamp');
         $this->addBehavior('Muffin/Trash.Trash');
+
+        $this->hasMany('Products');
+        $this->hasMany('CartItems', ['foreignKey' => 'buyer_id']);
+        $this->hasMany('Orders', ['foreignKey' => 'buyer_id']);
+        $this->hasMany('Reviews', ['foreignKey' => 'user_id']);
+        $this->hasMany('Logs', ['foreignKey' => 'user_id']);
     }
 
     /**
@@ -60,13 +73,11 @@ class UsersTable extends Table
         $validator
             ->scalar('password')
             ->maxLength('password', 255)
-            ->requirePresence('password', 'create')
-            ->notEmptyString('password');
+            ->allowEmptyString('password');
 
         $validator
             ->scalar('address')
-            ->requirePresence('address', 'create')
-            ->notEmptyString('address');
+            ->allowEmptyString('address');
 
         $validator
             ->scalar('description')
@@ -77,6 +88,16 @@ class UsersTable extends Table
             ->maxLength('role', 255)
             ->requirePresence('role', 'create')
             ->notEmptyString('role');
+
+        $validator
+            ->scalar('google_id')
+            ->maxLength('google_id', 255)
+            ->allowEmptyString('google_id');
+
+        $validator
+            ->scalar('provider')
+            ->maxLength('provider', 255)
+            ->allowEmptyString('provider');
 
         $validator
             ->dateTime('deleted')
@@ -105,5 +126,77 @@ class UsersTable extends Table
         $rules->add($rules->isUnique(['email']), ['errorField' => 'email']);
 
         return $rules;
+    }
+
+    /**
+     * Generate a password reset token for the user with the given email.
+     *
+     * @param string $email The user's email.
+     * @return string|null The generated token, or null if user not found.
+     */
+    public function generateResetToken(string $email): ?string
+    {
+        /** @var \App\Model\Entity\User|null $user */
+        $user = $this->find()
+            ->where(['email' => $email])
+            ->first();
+
+        if (!$user) {
+            return null;
+        }
+
+        $token = bin2hex(random_bytes(32)); // generate random token
+        $expiry = FrozenTime::now()->addHour(); // Expire in 1 hour
+
+        $user->password_reset_token = $token;
+        $user->password_reset_token_expiry = $expiry;
+
+        try {
+            $this->saveOrFail($user);
+        } catch (Exception $e) {
+            Log::error('Failed to save password reset token for user ' . $user->id . ': ' . $e->getMessage());
+
+            return null;
+        }
+
+        return $token;
+    }
+
+    /**
+     * Validate and reset the password using the token.
+     *
+     * @param string $token The reset token.
+     * @param string $newPassword The new password.
+     * @return bool True if reset successful, false otherwise.
+     */
+    public function resetPassword(string $token, string $newPassword): bool
+    {
+        /** @var \App\Model\Entity\User|null $user */
+        $user = $this->find()
+            ->where(['password_reset_token' => $token])
+            ->first();
+
+        // Invalid or expired token
+        if (
+            $user === null ||
+            $user->password_reset_token_expiry === null ||
+            $user->password_reset_token_expiry < FrozenTime::now()
+        ) {
+            return false;
+        }
+
+        $user->password = $newPassword;
+        $user->password_reset_token = null;
+        $user->password_reset_token_expiry = null;
+
+        try {
+            $this->saveOrFail($user);
+
+            return true;
+        } catch (Exception $e) {
+            Log::error('Failed to reset password for user ' . $user->id . ': ' . $e->getMessage());
+
+            return false;
+        }
     }
 }

@@ -22,6 +22,8 @@ use Cake\View\View;
  *
  * Your application's default view class
  *
+ * @property \App\View\Helper\ImageHelper $Image
+ * @property \App\View\Helper\NavigationHelper $Navigation
  * @link https://book.cakephp.org/4/en/views.html#the-app-view
  */
 class AppView extends View
@@ -37,5 +39,7 @@ class AppView extends View
      */
     public function initialize(): void
     {
+        $this->loadHelper('Image');
+        $this->loadHelper('Navigation');
     }
 }
