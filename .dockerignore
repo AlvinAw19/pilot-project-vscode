@@ -1,0 +1,9 @@
+.git
+docker/
+frontend/node_modules
+app/vendor
+app/tmp
+app/logs
+app/config/app_local.php
+*.md
+docker-compose.yml
