@@ -67,9 +67,9 @@
         <?php foreach ($categories as $category): ?>
             <?php if ($category->name === 'Others') continue; ?>
             <?= $this->Html->link(
-                h($category->name),
+                $category->name,
                 ['action' => 'index', '?' => ['category_id' => $category->id]],
-                ['class' => 'button' . ($categoryId == $category->id ? ' selected' : '')]
+                ['class' => 'button' . ($categoryId == $category->id ? ' selected' : ''), 'escape' => true]
             ) ?>
         <?php endforeach; ?>
 

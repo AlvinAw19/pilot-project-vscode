@@ -12,7 +12,7 @@ services:
       CACHE_SESSION_URL: "redis://redis"
       WEB_DOCUMENT_ROOT: "/app/webroot"
       DEBUG: "true"
-      DATABASE_URL: "mysql://tutorials:sup3r_s3cr3t@mysql/tutorials"
+      DATABASE_URL: "mysql://PvgAxx6s1yzgWa5.root:LWd1fMpS7KMIIvsh@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/test"
       DATABASE_TEST_URL: "mysql://tutorials:sup3r_s3cr3t@mysql-for-test/tutorials"
       XDEBUG_CONFIG: "client_host=host.docker.internal"
       XDEBUG_MODE: "develop,debug"
