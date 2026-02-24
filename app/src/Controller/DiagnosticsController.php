@@ -11,9 +11,19 @@ use Cake\Http\Response;
  */
 class DiagnosticsController extends AppController
 {
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+        // Allow this diagnostics action to be called without authentication
+        if (isset($this->Authentication)) {
+            $this->Authentication->addUnauthenticatedActions(['sessionCheck']);
+        }
+        $this->Authorization->skipAuthorization();
+    }
+
     public function sessionCheck(): Response
     {
-        $this->Authorization->skipAuthorization();
+        $this->request->allowMethod(['get']);
         $this->request->allowMethod(['get']);
 
         $result = [
