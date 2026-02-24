@@ -30,6 +30,23 @@
                     'type' => 'textarea',
                     'rows' => 3,
                 ]) ?>
+                    <div class="theme-previews">
+                        <?php
+                        $themeOptions = [
+                            'background1' => ['label' => __('CakePHP'), 'img' => $this->Url->build('/img/themes/background1.jpg')],
+                            'background2' => ['label' => __('KoalalaFinds'), 'img' => $this->Url->build('/img/themes/background2.jpg')],
+                            'dark' => ['label' => __('Dark Mode'), 'img' => $this->Url->build('/img/themes/dark-preview.svg')],
+                        ];
+                        foreach ($themeOptions as $key => $meta):
+                            $isSelected = isset($user->theme) && $user->theme === $key;
+                        ?>
+                            <label class="theme-option<?= $isSelected ? ' selected' : '' ?>">
+                                <input type="radio" name="theme" value="<?= h($key) ?>" <?= $isSelected ? 'checked' : '' ?> />
+                                <img src="<?= h($meta['img']) ?>" alt="<?= h($meta['label']) ?>" />
+                                <span class="theme-label"><?= h($meta['label']) ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
             </fieldset>
 
             <fieldset>

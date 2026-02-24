@@ -27,14 +27,24 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     </title>
     <?= $this->Html->meta('icon') ?>
 
-    <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake']) ?>
+    <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake', 'styles']) ?>
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
 </head>
-<body>
-    <?php $identity = $this->request->getAttribute('identity'); ?>
+<?php $identity = $this->request->getAttribute('identity');
+      $theme = 'background1';
+      if ($identity) {
+          // identity may be an object or array depending on auth plugin
+          if (is_object($identity) && isset($identity->theme)) {
+              $theme = h($identity->theme);
+          } elseif (is_array($identity) && isset($identity['theme'])) {
+              $theme = h($identity['theme']);
+          }
+      }
+?>
+<body class="theme-<?= $theme ?>">
     <nav class="top-nav">
         <div class="top-nav-title">
             <a href="<?= $this->Url->build('/') ?>"><span>Koalala</span>Finds</a>
@@ -52,4 +62,5 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     <footer>
     </footer>
 </body>
+<?= $this->Html->script('theme-preview') ?>
 </html>

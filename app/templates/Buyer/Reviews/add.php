@@ -87,7 +87,7 @@
     }
 
     .error-message {
-        color: #dc3545;
+        color: var(--primary);
         font-size: 0.85rem;
         margin-top: 0.25rem;
     }

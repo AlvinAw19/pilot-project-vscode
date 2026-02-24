@@ -78,6 +78,9 @@ class Application extends BaseApplication implements
 
         // Load more plugins here
         $this->addPlugin('Muffin/Trash');
+        // Configure Muffin/Trash default field name used for soft deletes
+        // The project uses a `deleted` datetime column on several tables.
+        Configure::write('Muffin/Trash.field', 'deleted');
         $this->addPlugin('Authorization');
         $this->addPlugin('Search');
     }

@@ -66,13 +66,13 @@
                         <td>
                             <?php if (!empty($item->review)): ?>
                                 <?= $this->Html->link(
-                                    __('Edit Review'),
+                                    __('Edit'),
                                     ['controller' => 'Reviews', 'action' => 'edit', $item->id],
                                     ['class' => 'button button-small']
                                 ) ?>
                             <?php else: ?>
                                 <?= $this->Html->link(
-                                    __('Leave Review'),
+                                    __('Add'),
                                     ['controller' => 'Reviews', 'action' => 'add', $item->id],
                                     ['class' => 'button button-small']
                                 ) ?>

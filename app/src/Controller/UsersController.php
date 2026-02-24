@@ -371,6 +371,7 @@ class UsersController extends AppController
                         'name' => true,
                         'address' => true,
                         'password' => true,
+                        'theme' => true,
                     ],
                 ]);
 
