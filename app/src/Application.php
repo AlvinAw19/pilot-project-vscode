@@ -59,6 +59,15 @@ class Application extends BaseApplication implements
         // Call parent to load bootstrap from files.
         parent::bootstrap();
 
+        // Allow forcing database session storage via env var in deployments
+        // Set the env var FORCE_DB_SESSIONS=true in your deployment to enable.
+        if (filter_var(env('FORCE_DB_SESSIONS', false), FILTER_VALIDATE_BOOLEAN)) {
+            Configure::write('Session', [
+                'defaults' => 'database',
+                'timeout' => 43200,
+            ]);
+        }
+
         if (PHP_SAPI === 'cli') {
             $this->bootstrapCli();
         } else {
