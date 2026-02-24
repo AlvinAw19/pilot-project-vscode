@@ -76,3 +76,5 @@ yarn-error.log
 !/webroot/js/theme-preview.js
 !/webroot/fonts/
 !/webroot/fonts/*
+!/webroot/font/
+!/webroot/font/*
