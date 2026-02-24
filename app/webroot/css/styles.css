@@ -804,6 +804,19 @@ body.theme-background1 .top-nav {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
 }
 
+/* Ensure the main content container remains white for the default background1 theme
+   so other global or dark-mode rules do not accidentally make it grey. */
+body.theme-background1 .content,
+body.theme-background1 .catalogs.catalog.content,
+body.theme-background1 .catalog.content,
+body.theme-background1 .products.view.content,
+body.theme-background1 .content.catalog {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0,0,0,0.04) !important;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.06) !important;
+}
+
 body.theme-background2 {
   --bg-start: rgba(245,252,240,0.95);
   --bg-end: rgba(232,247,238,0.95);
