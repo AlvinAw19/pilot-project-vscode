@@ -147,8 +147,9 @@ return [
         ],
 
         'session' => [
-            'className' => RedisEngine::class,
+            'className' => FileEngine::class,
             'prefix' => 'myapp_session_',
+            'path' => CACHE . 'sessions' . DS,
             'url' => env('CACHE_SESSION_URL', null),
             'duration' => '+31 days',
         ],
@@ -427,10 +428,11 @@ return [
      * To use database sessions, load the SQL file located at config/schema/sessions.sql
      */
     'Session' => [
-        'defaults' => 'cache',
-        'handler' => [
-            'config' => 'session'
+        'defaults' => 'php',
+        'timeout' => 43200,
+        'ini' => [
+            'session.cookie_secure' => true,
+            'session.cookie_samesite' => 'Lax',
         ],
-        'timeout' => 43200, // 30 days. Need to be slightly lower than Cache.session.duration
     ],
 ];
