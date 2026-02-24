@@ -73,3 +73,4 @@ yarn-error.log
 !/webroot/img/themes/background1.jpg
 !/webroot/img/themes/background2.jpg
 !/webroot/img/themes/dark-preview.svg
+!/webroot/js/theme-preview.js
