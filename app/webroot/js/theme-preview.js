@@ -1,51 +1,44 @@
+// Small script to allow live preview of theme selections in the profile page.
+// Clicking a .theme-option will check its radio and update the body class to
+// `theme-<name>` so users can preview before saving.
 document.addEventListener('DOMContentLoaded', function () {
-    var previewContainer = document.querySelector('.theme-previews');
-    if (!previewContainer) return;
+  try {
+    const options = document.querySelectorAll('.theme-option');
+    if (!options.length) return;
 
-    var radios = previewContainer.querySelectorAll('input[name="theme"]');
-    var body = document.body || document.getElementsByTagName('body')[0];
-
-    function applyThemeClass(theme) {
-        // remove any existing theme-* class
-        body.className = body.className.replace(/\btheme-\S+/g, '').trim();
-        if (theme) {
-            body.classList.add('theme-' + theme);
-        }
+    function clearThemeClasses() {
+      document.body.className = document.body.className
+        .split(/\s+/)
+        .filter(c => !c.startsWith('theme-'))
+        .join(' ')
+        .trim();
     }
 
-    // Live preview on change
-    radios.forEach(function (r) {
-        r.addEventListener('change', function (e) {
-            applyThemeClass(e.target.value);
-            // mark selected visual state
-            radios.forEach(function (other) {
-                var label = other.closest('.theme-option');
-                if (label) {
-                    label.classList.toggle('selected', other.checked);
-                }
-            });
+    options.forEach(function (opt) {
+      const input = opt.querySelector('input[type="radio"]');
+      // Allow keyboard change as well
+      if (input) {
+        input.addEventListener('change', function () {
+          if (this.checked) {
+            clearThemeClasses();
+            document.body.classList.add('theme-' + this.value);
+          }
         });
-        // allow click on the image/label to toggle selection too (in case markup differs)
-        var label = r.closest('.theme-option');
-        if (label) {
-            label.addEventListener('click', function () {
-                r.checked = true;
-                r.dispatchEvent(new Event('change', { bubbles: true }));
-            });
+      }
+
+      opt.addEventListener('click', function (e) {
+        // Ensure the radio is checked (label click usually does this)
+        if (input && !input.checked) {
+          input.checked = true;
         }
+        if (input) {
+          clearThemeClasses();
+          document.body.classList.add('theme-' + input.value);
+        }
+      });
     });
-
-    // Ensure the theme from the server (body class) matches selection on load
-    var current = (body.className.match(/theme-([a-z0-9-_]+)/i) || [null, null])[1];
-    if (current) {
-        radios.forEach(function (r) {
-            var label = r.closest('.theme-option');
-            if (r.value === current) {
-                r.checked = true;
-                if (label) label.classList.add('selected');
-            } else if (label) {
-                label.classList.remove('selected');
-            }
-        });
-    }
+  } catch (e) {
+    // Don't break the page if preview script fails
+    console && console.error && console.error('theme-preview error', e);
+  }
 });
