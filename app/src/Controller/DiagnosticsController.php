@@ -39,6 +39,23 @@ class DiagnosticsController extends AppController
         $sessionConfig = Cache::getConfig('session');
         $result['cache_session_configured'] = $sessionConfig !== null;
 
+        // Provide a sanitized summary of the cache config (no secrets)
+        if ($sessionConfig) {
+            $summary = [];
+            if (!empty($sessionConfig['className'])) {
+                $summary['engine'] = $sessionConfig['className'];
+            }
+            if (!empty($sessionConfig['url'])) {
+                $parts = parse_url($sessionConfig['url']);
+                if ($parts) {
+                    $summary['scheme'] = $parts['scheme'] ?? null;
+                    $summary['host'] = $parts['host'] ?? null;
+                    $summary['port'] = $parts['port'] ?? null;
+                }
+            }
+            $result['cache_config_summary'] = $summary;
+        }
+
         // Try writing/reading a test key using the 'session' cache config
         try {
             if ($result['cache_session_configured']) {
