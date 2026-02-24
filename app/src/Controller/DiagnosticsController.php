@@ -86,4 +86,44 @@ class DiagnosticsController extends AppController
 
         return $this->response;
     }
+
+    /**
+     * Delayed read test: write a key, wait briefly, then read it back.
+     * Helps detect replication lag or read-replica inconsistencies.
+     */
+    public function sessionCheckDelayed(): Response
+    {
+        $this->request->allowMethod(['get']);
+
+        $result = [
+            'cache_session_configured' => false,
+            'write_ok' => false,
+            'immediate_read_ok' => false,
+            'delayed_read_ok' => false,
+        ];
+
+        $sessionConfig = Cache::getConfig('session');
+        $result['cache_session_configured'] = $sessionConfig !== null;
+
+        try {
+            if ($result['cache_session_configured']) {
+                $ok = Cache::write('diagnostics_delayed_key', 'ok', 'session');
+                $result['write_ok'] = $ok === true;
+                $val1 = Cache::read('diagnostics_delayed_key', 'session');
+                $result['immediate_read_ok'] = ($val1 === 'ok');
+                // wait briefly to allow replication to catch up if applicable
+                usleep(500000); // 0.5s
+                $val2 = Cache::read('diagnostics_delayed_key', 'session');
+                $result['delayed_read_ok'] = ($val2 === 'ok');
+                Cache::delete('diagnostics_delayed_key', 'session');
+            }
+        } catch (\Exception $e) {
+            $result['cache_error'] = $e->getMessage();
+        }
+
+        $this->response = $this->response->withType('application/json')
+            ->withStringBody(json_encode($result, JSON_PRETTY_PRINT));
+
+        return $this->response;
+    }
 }
