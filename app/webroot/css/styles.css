@@ -141,7 +141,8 @@ input[type=submit],
 input[type=button] {
   display: inline-block;
   padding: 0.5rem 1.5rem;
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  /* Use theme variables so buttons follow the selected theme */
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #ffffff;
   border: none;
   border-radius: 6px;
@@ -158,7 +159,7 @@ button:hover,
 .button:hover,
 input[type=submit]:hover,
 input[type=button]:hover {
-  background: linear-gradient(135deg, #c82333 0%, rgb(178, 31, 45) 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
@@ -173,17 +174,17 @@ button.button-outline,
 input[type=submit].button-outline,
 input[type=button].button-outline {
   background: transparent;
-  border: 2px solid #dc3545;
-  color: #dc3545;
+  border: 2px solid var(--primary);
+  color: var(--primary);
   box-shadow: none;
 }
 button.button-outline:hover,
 .button.button-outline:hover,
 input[type=submit].button-outline:hover,
 input[type=button].button-outline:hover {
-  background: #dc3545;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #ffffff;
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
 }
 button.selected,
 .button.selected,
@@ -433,6 +434,37 @@ form .error-message {
   font-weight: 500;
   margin-top: 0.25rem;
   display: block;
+}
+.user-meta p { color: var(--text); }
+
+/* Ensure the Member Since line is readable in dark theme */
+body.theme-dark .users.form .user-meta p,
+body.theme-dark .users.form .user-meta p strong {
+  color: #ffffff !important;
+}
+
+/* Profile action buttons: align and make Back to Catalog match Update button */
+.profile-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+.profile-actions .button,
+.profile-actions button,
+.profile-actions a.button {
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.profile-actions a.button.button-outline,
+.profile-actions .button.button-outline {
+  /* Make outline links look like the primary button in this context */
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  color: var(--primary-contrast) !important;
+  border: none !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12) !important;
 }
 form .help {
   color: #7f8c8d;
@@ -815,6 +847,45 @@ body.theme-background1 .content.catalog {
   color: var(--text) !important;
   border: 1px solid rgba(0,0,0,0.04) !important;
   box-shadow: 0 4px 6px rgba(0,0,0,0.06) !important;
+}
+
+/* Ensure tables inside the catalog/product views remain white for background1 */
+body.theme-background1 .products.view.content table,
+body.theme-background1 .catalogs.catalog.content table,
+body.theme-background1 .catalog.content table,
+body.theme-background1 .content.catalog table {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  border-collapse: separate !important;
+}
+
+body.theme-background1 .products.view.content table th,
+body.theme-background1 .products.view.content table td,
+body.theme-background1 .catalogs.catalog.content table th,
+body.theme-background1 .catalogs.catalog.content table td,
+body.theme-background1 .catalog.content table th,
+body.theme-background1 .catalog.content table td {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-color: rgba(0,0,0,0.06) !important;
+}
+
+body.theme-background1 .products.view.content table thead th,
+body.theme-background1 .catalogs.catalog.content table thead th {
+  background: rgba(0,0,0,0.03) !important;
+}
+
+/* Profile action buttons: align and size them consistently */
+.profile-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+.profile-actions .button {
+  min-width: 160px;
+  padding: 0.6rem 1.25rem;
+  text-align: center;
 }
 
 body.theme-background2 {

@@ -79,7 +79,10 @@
                 <p><strong><?= __('Member Since') ?>:</strong> <?= h($user->created->format('F j, Y')) ?></p>
             </div>
 
-            <?= $this->Form->button(__('Update Profile')) ?>
+            <div class="profile-actions">
+                <?= $this->Form->button(__('Update Profile')) ?>
+                <?= $this->Html->link(__('Back to Catalog'), ['controller' => 'Catalogs', 'action' => 'index'], ['class' => 'button', 'escape' => false]) ?>
+            </div>
             <?= $this->Form->end() ?>
         </div>
     </div>
