@@ -145,11 +145,42 @@ class ProductsTable extends Table
     private function searchFilters(): void
     {
         $this->searchManager()
-            ->add('search', 'Search.Like', [
-                'before' => true,
-                'after' => true,
-                'mode' => 'or',
-                'fields' => ['Products.name', 'Products.description'],
+            ->add('search', 'Search.Callback', [
+                'callback' => function (\Cake\ORM\Query $query, array $args, \Search\Model\Filter\Base $filter) {
+                    // Accept different shapes of $args (string or array)
+                    $term = null;
+                    if (is_array($args)) {
+                        if (isset($args['search'])) {
+                            $term = $args['search'];
+                        } else {
+                            foreach ($args as $val) {
+                                if (is_string($val) && $val !== '') {
+                                    $term = $val;
+                                    break;
+                                }
+                            }
+                        }
+                    } elseif (is_string($args)) {
+                        $term = $args;
+                    }
+
+                    if ($term === null || $term === '') {
+                        return;
+                    }
+
+                    $term = mb_strtolower((string)$term);
+                    $like = '%' . $term . '%';
+
+                    $lowerName = $query->func()->lower(['Products.name' => 'identifier']);
+                    $lowerDesc = $query->func()->lower(['Products.description' => 'identifier']);
+
+                    $query->andWhere(function ($exp, $q) use ($lowerName, $lowerDesc, $like) {
+                        return $exp->or_([
+                            $exp->like($lowerName, $like),
+                            $exp->like($lowerDesc, $like),
+                        ]);
+                    });
+                }
             ])
             ->add('category_id', 'Search.Value', [
                 'fields' => ['Products.category_id'],
