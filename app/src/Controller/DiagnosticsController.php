@@ -16,7 +16,7 @@ class DiagnosticsController extends AppController
         parent::beforeFilter($event);
         // Allow this diagnostics action to be called without authentication
         if (isset($this->Authentication)) {
-            $this->Authentication->addUnauthenticatedActions(['sessionCheck']);
+            $this->Authentication->addUnauthenticatedActions(['sessionCheck', 'sessionCheckDelayed']);
         }
         $this->Authorization->skipAuthorization();
     }
