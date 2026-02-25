@@ -1047,6 +1047,29 @@ body.theme-background2 .content {
   background: rgba(255,255,255,0.95);
 }
 
+/* Users/profile form overrides for green theme to replace leftover red accents */
+body.theme-background2 .users.form {
+  background: var(--surface, #f6fbf6) !important;
+  border-color: rgba(58,157,84,0.12) !important;
+  box-shadow: 0 6px 18px rgba(58,157,84,0.06) !important;
+}
+body.theme-background2 .users.form h2 {
+  color: var(--primary) !important;
+}
+body.theme-background2 .users.form h3 {
+  color: var(--muted) !important;
+}
+body.theme-background2 .users.form .input input:focus {
+  border-color: rgba(46,125,50,0.18) !important;
+  box-shadow: 0 0 0 3px rgba(58,157,84,0.08) !important;
+}
+body.theme-background2 .users.form p a {
+  color: var(--primary) !important;
+}
+body.theme-background2 .users.form p a:hover {
+  color: var(--primary-dark) !important;
+}
+
 /* Force most buttons and action links to use the green theme colors */
 body.theme-background2 .button,
 body.theme-background2 button,
