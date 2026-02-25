@@ -58,7 +58,7 @@
                         </td>
 
                         <td class="actions">
-                            <?= $this->Form->button(__('Update')) ?>
+                            <?= $this->Form->button(__('Update'), ['class' => 'button']) ?>
                             <?= $this->Form->end() ?>
                             <?= $this->Form->postLink(
                                 __('Remove'),
@@ -67,7 +67,8 @@
                                     'confirm' => __(
                                         'Are you sure you want to remove {0} from your cart?',
                                         $item->product->name
-                                    )
+                                    ),
+                                    'class' => 'button button-outline'
                                 ]
                             ) ?>
                         </td>

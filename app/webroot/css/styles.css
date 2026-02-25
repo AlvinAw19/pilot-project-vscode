@@ -548,6 +548,37 @@ table tbody td.actions a.delete:hover {
   background: rgb(213.698630137, 43.8356164384, 26.301369863);
 }
 
+/* Ensure buttons inside action cells match anchor action styles (size, padding, radius) */
+table tbody td.actions button,
+table tbody td.actions .button,
+.actions button,
+.actions .button {
+  margin-right: 0.5rem;
+  padding: 0.25rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: none;
+}
+
+table tbody td.actions button.button-outline,
+table tbody td.actions .button.button-outline,
+.actions .button.button-outline {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+/* Match hover behavior for buttons to anchors in action cells */
+table tbody td.actions button:hover,
+table tbody td.actions .button:hover,
+.actions button:hover,
+.actions .button:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .card {
   background: #ffffff;
   border-radius: 8px;
@@ -1094,6 +1125,32 @@ body.theme-background2 .actions a {
   display: inline-block;
   text-align: center;
   border-radius: 6px !important;
+}
+
+/* Keep the outline variant as an outline inside action cells (don't let the theme force-fill it) */
+body.theme-background2 .actions .button.button-outline,
+body.theme-background2 table tbody td.actions button.button-outline,
+body.theme-background2 table tbody td.actions a.button.button-outline {
+  background: transparent !important;
+  color: var(--primary) !important;
+  border: 2px solid rgba(58,157,84,0.95) !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0.9rem !important;
+  min-width: 84px !important;
+}
+
+/* Ensure native <button> elements in action cells match the anchor sizing and alignment */
+body.theme-background2 table tbody td.actions button,
+body.theme-background2 .actions button,
+body.theme-background2 table tbody td.actions .button,
+body.theme-background2 .actions .button {
+  padding: 0.5rem 0.9rem !important;
+  font-size: 0.95rem !important;
+  min-width: 84px !important;
+  display: inline-block !important;
+  text-align: center !important;
+  border-radius: 6px !important;
+  vertical-align: middle !important;
 }
 
 /* Product card action buttons */
