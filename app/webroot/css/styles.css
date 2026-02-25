@@ -2326,6 +2326,19 @@ body.theme-dark .content.catalog {
   box-shadow: none !important;
 }
 
+/* Make profile panel and its metadata readable in dark theme */
+body.theme-dark .users.form.content {
+  background: #2f3133 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  box-shadow: none !important;
+}
+
+body.theme-dark .users.form .user-meta p,
+body.theme-dark .users.form .user-meta p strong {
+  color: #ffffff !important;
+}
+
 /* Ensure headings and important text contrast well on the grey panel */
 body.theme-dark .catalogs.catalog.content h3,
 body.theme-dark .catalogs.catalog.content h4,
