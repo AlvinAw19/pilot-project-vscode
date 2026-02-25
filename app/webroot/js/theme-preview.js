@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', function () {
         .trim();
     }
 
+    function clearSelectedOptions() {
+      options.forEach(function (o) {
+        o.classList.remove('selected');
+      });
+    }
+
     options.forEach(function (opt) {
       const input = opt.querySelector('input[type="radio"]');
       // Allow keyboard change as well
@@ -21,22 +27,43 @@ document.addEventListener('DOMContentLoaded', function () {
         input.addEventListener('change', function () {
           if (this.checked) {
             clearThemeClasses();
+            clearSelectedOptions();
+            opt.classList.add('selected');
             document.body.classList.add('theme-' + this.value);
           }
         });
       }
 
       opt.addEventListener('click', function (e) {
-        // Ensure the radio is checked (label click usually does this)
-        if (input && !input.checked) {
-          input.checked = true;
-        }
+        // Prevent double handling if click was on the radio itself
         if (input) {
-          clearThemeClasses();
-          document.body.classList.add('theme-' + input.value);
+          if (!input.checked) {
+            input.checked = true;
+            // Dispatch change so other listeners (and our change handler) run
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            // still ensure selected class and body class are in sync
+            clearThemeClasses();
+            clearSelectedOptions();
+            opt.classList.add('selected');
+            document.body.classList.add('theme-' + input.value);
+          }
         }
       });
     });
+
+    // Initialize state from whichever radio is checked on load
+    (function initFromChecked() {
+      options.forEach(function (opt) {
+        const input = opt.querySelector('input[type="radio"]');
+        if (input && input.checked) {
+          clearThemeClasses();
+          clearSelectedOptions();
+          opt.classList.add('selected');
+          document.body.classList.add('theme-' + input.value);
+        }
+      });
+    })();
   } catch (e) {
     // Don't break the page if preview script fails
     console && console.error && console.error('theme-preview error', e);

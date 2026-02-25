@@ -440,7 +440,7 @@ form .error-message {
 /* Ensure the Member Since line is readable in dark theme */
 body.theme-dark .users.form .user-meta p,
 body.theme-dark .users.form .user-meta p strong {
-  color: #ffffff !important;
+  color: #000000 !important;
 }
 
 /* Profile action buttons: align and make Back to Catalog match Update button */
@@ -2334,10 +2334,6 @@ body.theme-dark .users.form.content {
   box-shadow: none !important;
 }
 
-body.theme-dark .users.form .user-meta p,
-body.theme-dark .users.form .user-meta p strong {
-  color: #ffffff !important;
-}
 
 /* Ensure headings and important text contrast well on the grey panel */
 body.theme-dark .catalogs.catalog.content h3,
