@@ -60,8 +60,9 @@ class ReviewsController extends AppController
 
         if ($this->request->is('post')) {
             $data = $this->request->getData();
-            $minioService = new MinioService();
-
+            // Temporarily disable MinIO uploads to avoid deployment failures.
+            // $minioService = new MinioService();
+            /*
             // Handle image upload via MinIO (same pattern as ProductsController)
             if (!empty($data['image_link'])) {
                 $uploadedUrl = $minioService->uploadImage(
@@ -73,6 +74,13 @@ class ReviewsController extends AppController
                 } else {
                     unset($data['image_link']);
                 }
+            }
+            */
+            // If a file was submitted, remove it from the payload so the review
+            // can be saved without attempting an external upload while MinIO is
+            // disabled temporarily.
+            if (!empty($data['image_link'])) {
+                unset($data['image_link']);
             }
 
             $data['user_id'] = $userId;
@@ -119,8 +127,9 @@ class ReviewsController extends AppController
 
         if ($this->request->is(['patch', 'post', 'put'])) {
             $data = $this->request->getData();
-            $minioService = new MinioService();
-
+            // Temporarily disable MinIO uploads to avoid deployment failures.
+            // $minioService = new MinioService();
+            /*
             // Handle image upload via MinIO (same pattern as ProductsController)
             if (!empty($data['image_link'])) {
                 $uploadedUrl = $minioService->uploadImage(
@@ -132,6 +141,13 @@ class ReviewsController extends AppController
                 } else {
                     unset($data['image_link']);
                 }
+            }
+            */
+            // If a file was submitted, remove it from the payload so the review
+            // can be saved without attempting an external upload while MinIO is
+            // disabled temporarily.
+            if (!empty($data['image_link'])) {
+                unset($data['image_link']);
             }
 
             $review = $this->Reviews->patchEntity($review, $data);
