@@ -33,16 +33,27 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
 </head>
-<?php $identity = $this->request->getAttribute('identity');
-      $theme = 'background1';
-      if ($identity) {
-          // identity may be an object or array depending on auth plugin
-          if (is_object($identity) && isset($identity->theme)) {
-              $theme = h($identity->theme);
-          } elseif (is_array($identity) && isset($identity['theme'])) {
-              $theme = h($identity['theme']);
-          }
-      }
+<?php
+    $identity = $this->request->getAttribute('identity');
+    // Default theme
+    $theme = 'background1';
+    // Whitelist allowed theme values to avoid unexpected class injection
+    $allowedThemes = ['background1', 'background2', 'dark'];
+    if ($identity) {
+        $candidate = null;
+        if (is_object($identity) && isset($identity->theme)) {
+            $candidate = (string)$identity->theme;
+        } elseif (is_array($identity) && isset($identity['theme'])) {
+            $candidate = (string)$identity['theme'];
+        }
+
+        if ($candidate !== null) {
+            $candidate = trim($candidate);
+            if (in_array($candidate, $allowedThemes, true)) {
+                $theme = h($candidate);
+            }
+        }
+    }
 ?>
 <body class="theme-<?= $theme ?>">
     <nav class="top-nav">

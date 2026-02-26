@@ -2475,6 +2475,41 @@ body.theme-dark .users.form.content {
 
 
 /* Ensure headings and important text contrast well on the grey panel */
+
+/* FINAL OVERRIDES: ensure non-dark themes always show white panels/tables
+   This is intentionally placed at the end and uses !important so that
+   deployment/browser dark-mode rules do not unexpectedly darken panels. */
+body:not(.theme-dark) .content,
+body:not(.theme-dark) .card,
+body:not(.theme-dark) .products.view.content,
+body:not(.theme-dark) .catalog.content,
+body:not(.theme-dark) .catalogs.catalog.content,
+body:not(.theme-dark) table,
+body:not(.theme-dark) .content table,
+body:not(.theme-dark) .content table th,
+body:not(.theme-dark) .content table td,
+body:not(.theme-dark) .card .card-body {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  border-color: rgba(0,0,0,0.04) !important;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.06) !important;
+}
+
+body:not(.theme-dark) table thead {
+  background: linear-gradient(135deg, rgba(26,94,57,0.98) 0%, rgba(34,104,64,0.98) 100%) !important;
+  color: var(--primary-contrast) !important;
+}
+
+/* Prevent prefers-color-scheme from darkening these elements */
+@media (prefers-color-scheme: dark) {
+  body:not(.theme-dark) .content,
+  body:not(.theme-dark) .card,
+  body:not(.theme-dark) table {
+    background: #ffffff !important;
+    color: var(--text) !important;
+  }
+}
+
 body.theme-dark .catalogs.catalog.content h3,
 body.theme-dark .catalogs.catalog.content h4,
 body.theme-dark .products.view.content h3,
