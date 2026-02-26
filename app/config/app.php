@@ -259,10 +259,7 @@ return [
     'Email' => [
         'default' => [
             'transport' => 'default',
-            'from' => [
-                env('EMAIL_FROM', 'alvinaw.isr2024@gmail.com')
-                    => env('EMAIL_FROM_NAME', 'Koalala Finds')
-            ],
+            'from' => [env('EMAIL_FROM')=> env('EMAIL_FROM_NAME')],
             'charset' => 'utf-8',
             'headerCharset' => 'utf-8',
         ],
