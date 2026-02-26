@@ -28,6 +28,21 @@ body {
   min-height: 100vh;
 }
 
+/* Force non-dark themes to use white content panels and tables
+   This prevents accidental dark backgrounds leaking into red/green themes */
+body:not(.theme-dark) .content,
+body:not(.theme-dark) .card,
+body:not(.theme-dark) .products.view.content,
+body:not(.theme-dark) .catalog.content,
+body:not(.theme-dark) .catalogs.catalog.content,
+body:not(.theme-dark) table {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0,0,0,0.04) !important;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.06) !important;
+}
+
+
 .top-nav {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -1076,6 +1091,43 @@ body.theme-background2 .message {
 body.theme-background2 .card,
 body.theme-background2 .content {
   background: rgba(255,255,255,0.95);
+}
+
+/* Ensure catalog/product content and tables are white under the green theme */
+body.theme-background2 .content.catalog,
+body.theme-background2 .catalog.content,
+body.theme-background2 .catalogs.catalog.content,
+body.theme-background2 .products.view.content {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0,0,0,0.04) !important;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.06) !important;
+}
+
+body.theme-background2 .products.view.content table,
+body.theme-background2 .catalogs.catalog.content table,
+body.theme-background2 .catalog.content table,
+body.theme-background2 .content.catalog table {
+  background: #ffffff !important;
+  color: var(--text) !important;
+  border-collapse: separate !important;
+}
+
+body.theme-background2 .products.view.content table th,
+body.theme-background2 .products.view.content table td,
+body.theme-background2 .catalogs.catalog.content table th,
+body.theme-background2 .catalogs.catalog.content table td,
+body.theme-background2 .catalog.content table th,
+body.theme-background2 .catalog.content table td {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-color: rgba(0,0,0,0.06) !important;
+}
+
+body.theme-background2 .products.view.content table thead th,
+body.theme-background2 .catalogs.catalog.content table thead th {
+  background: linear-gradient(135deg, rgba(26,94,57,0.98) 0%, rgba(34,104,64,0.98) 100%) !important;
+  color: var(--primary-contrast) !important;
 }
 
 /* Users/profile form overrides for green theme to replace leftover red accents */
