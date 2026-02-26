@@ -286,14 +286,14 @@ class CartItemsController extends AppController
                     ],
                 ]]);
 
-                // Send order confirmation to buyer
-                $mailer = new OrderMailer();
-                $mailer->orderConfirmation($order);
+                // // Send order confirmation to buyer
+                // $mailer = new OrderMailer();
+                // $mailer->orderConfirmation($order);
 
-                // Send notification to each seller
-                foreach ($order->order_items as $item) {
-                    $mailer->sellerNotification($item);
-                }
+                // // Send notification to each seller
+                // foreach ($order->order_items as $item) {
+                //     $mailer->sellerNotification($item);
+                // }
 
                 $this->Flash->success(__('Order completed successfully.'));
 
