@@ -260,7 +260,7 @@ return [
         'default' => [
             'transport' => 'default',
             'from' => [
-                env('EMAIL_FROM', 'a3662c001@smtp-brevo.com')
+                env('EMAIL_FROM', 'alvinaw.isr2024@gmail.com')
                     => env('EMAIL_FROM_NAME', 'Koalala Finds')
             ],
             'charset' => 'utf-8',
