@@ -237,22 +237,13 @@ return [
      */
     'EmailTransport' => [
         'default' => [
-            'className' => MailTransport::class,
-            /*
-             * The keys host, port, timeout, username, password, client and tls
-             * are used in SMTP transports
-             */
-            'host' => 'localhost',
-            'port' => 25,
+            'className' => 'Smtp',
+            'host' => env('EMAIL_HOST'),
+            'port' => env('EMAIL_PORT'),
+            'username' => env('EMAIL_USERNAME'),
+            'password' => env('EMAIL_PASSWORD'),
+            'tls' => env('EMAIL_TLS'),
             'timeout' => 30,
-            /*
-             * It is recommended to set these options through your environment or app_local.php
-             */
-            //'username' => null,
-            //'password' => null,
-            'client' => null,
-            'tls' => false,
-            'url' => env('EMAIL_TRANSPORT_DEFAULT_URL', null),
         ],
     ],
 
@@ -268,12 +259,11 @@ return [
     'Email' => [
         'default' => [
             'transport' => 'default',
-            'from' => 'you@localhost',
-            /*
-             * Will by default be set to config value of App.encoding, if that exists otherwise to UTF-8.
-             */
-            //'charset' => 'utf-8',
-            //'headerCharset' => 'utf-8',
+            'from' => [
+                env('EMAIL_FROM') => env('EMAIL_FROM_NAME')
+            ],
+            'charset' => 'utf-8',
+            'headerCharset' => 'utf-8',
         ],
     ],
 
