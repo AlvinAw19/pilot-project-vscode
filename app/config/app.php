@@ -238,11 +238,11 @@ return [
     'EmailTransport' => [
         'default' => [
             'className' => 'Smtp',
-            'host' => env('EMAIL_HOST'),
-            'port' => env('EMAIL_PORT'),
+            'host' => 'smtp-relay.brevo.com',
+            'port' => 587,
             'username' => env('EMAIL_USERNAME'),
             'password' => env('EMAIL_PASSWORD'),
-            'tls' => env('EMAIL_TLS'),
+            'tls' => true,
             'timeout' => 30,
         ],
     ],
@@ -259,7 +259,7 @@ return [
     'Email' => [
         'default' => [
             'transport' => 'default',
-            'from' => [env('EMAIL_FROM')=> env('EMAIL_FROM_NAME')],
+            'from' => ['alvinaw.isr2024@gmail.com'=> 'Koalala Finds'],
             'charset' => 'utf-8',
             'headerCharset' => 'utf-8',
         ],
