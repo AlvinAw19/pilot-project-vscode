@@ -5,6 +5,8 @@
     <?= $this->Flash->render() ?>
     <h2><?= __('Welcome to Koalala Finds') ?></h2>
     <h3><?= __('Login') ?></h3>
+    <p><?= $this->Html->link(__('Continue with Google'), ['action' => 'googleLogin'], ['class' => 'button']) ?></p>
+    <h4><?= __('or') ?></h4>
     <?= $this->Form->create() ?>
     <fieldset>
         <legend><?= __('Please enter your username and password') ?></legend>
@@ -13,5 +15,4 @@
     </fieldset>
     <?= $this->Form->submit(__('Login')); ?>
     <?= $this->Form->end() ?>
-    <p><?= __('Don\'t have an account?') ?> <?= $this->Html->link(__('Register here'), ['action' => 'register']) ?></p>
-</div>
+    <p><?= __('Don\'t have an account?') ?> <?= $this->Html->link(__('Register here'), ['action' => 'register']) ?> </p>
